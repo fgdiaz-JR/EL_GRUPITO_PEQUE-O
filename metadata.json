@@ -1,0 +1,6 @@
+{
+  "name": "El Grupito Pequeño",
+  "description": "Aplicación oficial offline-first para la lectura, búsqueda avanzada y catalogación de sermones de la comunidad de El Grupito Pequeño.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
