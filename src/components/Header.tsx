@@ -20,8 +20,8 @@ export default function Header({
   const isOled = theme === "oled";
 
   return (
-    <header className={`relative z-40 w-full border-b transition-all duration-300 ${
-      isOled ? "border-[#27272A] bg-[#0A0A0C]/90" : "border-emerald-100 bg-white"
+    <header className={`sticky top-0 z-50 w-full border-b transition-all duration-300 backdrop-blur-sm ${
+      isOled ? "border-[#27272A] bg-[#0A0A0C]/95" : "border-emerald-100 bg-white/95"
     }`}>
       <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6">
         {/* Brand logo */}

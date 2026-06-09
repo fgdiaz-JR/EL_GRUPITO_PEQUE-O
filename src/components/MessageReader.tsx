@@ -391,7 +391,7 @@ export default function MessageReader({
           <article className={`rounded-2xl border p-6 sm:p-10 shadow-2xl transition-colors duration-300 print:border-none print:bg-white print:p-0 ${
             isOled 
               ? "border-[#27272A] bg-[#0A0A0C] shadow-[#000000]/60 text-zinc-300" 
-              : "border-zinc-250 bg-white shadow-zinc-100/30 text-zinc-800"
+              : "border-zinc-250 bg-white shadow-zinc-100/30 text-black"
           }`}>
             
             {/* Metadata tags line */}

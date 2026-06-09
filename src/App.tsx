@@ -644,8 +644,11 @@ export default function App() {
         </AnimatePresence>
       </main>
 
+      {/* Spacer to prevent fixed mobile footer from blocking bottom content view */}
+      <div className="h-16 block md:hidden shrink-0" />
+
       {/* Primary Mobile Navigation Footer Rail - ONLY visible on smaller screens */}
-      <footer className={`relative z-40 block md:hidden border-t shadow-inner ${
+      <footer className={`fixed bottom-0 left-0 right-0 z-50 block md:hidden border-t shadow-inner ${
         isOled ? "border-[#27272A] bg-[#0A0A0C]" : "border-emerald-100 bg-white"
       }`}>
         <div className="flex items-center justify-around h-16">

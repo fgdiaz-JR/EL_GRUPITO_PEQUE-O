@@ -29,7 +29,6 @@
 /* Reader specific typography style triggers - Elegant Dark */
 .markdown-body {
   font-family: var(--font-sans);
-  color: #E0E0E0;
   line-height: 1.85;
 }
 
@@ -77,5 +76,6 @@
   border-left: 4px solid #CA8A04; /* gold / deep yellow left border */
   padding-left: 1.5rem;
   margin: 1.5rem 0;
-  color: #A1A1AA;
+  color: inherit;
+  opacity: 0.75;
 }
