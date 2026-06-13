@@ -3,8 +3,8 @@ import { BookOpen, Search, Users, Database, Sparkles, Heart, Sun, Moon } from "l
 import pozoLogo from "../assets/images/pozo_clean_logo_1780936653610.png";
 
 interface HeaderProps {
-  activeTab: "home" | "series" | "search" | "bookmarks" | "etl";
-  setActiveTab: (tab: "home" | "series" | "search" | "bookmarks" | "etl") => void;
+  activeTab: "home" | "series" | "search" | "bookmarks";
+  setActiveTab: (tab: "home" | "series" | "search" | "bookmarks") => void;
   bookmarksCount: number;
   theme: "oled" | "day";
   onToggleTheme: () => void;
@@ -107,23 +107,6 @@ export default function Header({
                 {bookmarksCount}
               </span>
             )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("etl")}
-            className={`flex items-center space-x-2 px-3.5 py-2 text-sm font-medium rounded-xl transition-all ${
-              activeTab === "etl" 
-                ? isOled 
-                  ? "bg-gradient-to-r from-[#FDE047] to-[#CA8A04] text-[#121212] font-semibold" 
-                  : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-sm"
-                : isOled 
-                  ? "text-zinc-400 border border-[#27272A] hover:bg-[#1E1E22] hover:text-white" 
-                  : "text-zinc-650 border border-emerald-200 hover:bg-emerald-50/50 hover:text-emerald-750"
-            }`}
-            id="nav-etl"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>AI Catalogar (ETL)</span>
           </button>
         </nav>
 

@@ -14,7 +14,7 @@ import {
   MessageSquare,
   HelpCircle,
   FolderOpen,
-  Sparkles
+  Database
 } from "lucide-react";
 
 import { Message, Series, Bookmark } from "./types";
@@ -22,12 +22,11 @@ import { initialSeries, initialMessages } from "./data/initialData";
 import Header from "./components/Header";
 import MessageCard from "./components/MessageCard";
 import MessageReader from "./components/MessageReader";
-import EtlConsole from "./components/EtlConsole";
 import pozoLogo from "./assets/images/pozo_clean_logo_1780936653610.png";
 
 export default function App() {
   // Navigation tabs
-  const [activeTab, setActiveTab] = useState<"home" | "series" | "search" | "bookmarks" | "etl">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "series" | "search" | "bookmarks">("home");
   
   // Theme state: "oled" (high contrast pure black) vs "day" (Forest sage teal)
   const [theme, setTheme] = useState<"oled" | "day">(() => {
@@ -629,15 +628,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB E: WORKSPACE ETL ADMIN */}
-              {activeTab === "etl" && (
-                <EtlConsole 
-                  seriesList={seriesList}
-                  onAddAnalyzedMessage={handleAddNewMessage}
-                  theme={theme}
-                />
-              )}
-
             </motion.div>
           )}
 
@@ -703,18 +693,6 @@ export default function App() {
                 {bookmarks.length}
               </span>
             )}
-          </button>
-
-          <button 
-            onClick={() => { setActiveTab("etl"); setSelectedMessageId(null); }}
-            className={`flex flex-col items-center justify-center space-y-0.5 text-xs font-semibold transition-colors ${
-              activeTab === "etl" 
-                ? isOled ? "text-[#FDE047]" : "text-emerald-700 font-bold" 
-                : "text-zinc-400 hover:text-zinc-650"
-            }`}
-          >
-            <Sparkles className="h-5 w-5" />
-            <span>ETL</span>
           </button>
         </div>
       </footer>
