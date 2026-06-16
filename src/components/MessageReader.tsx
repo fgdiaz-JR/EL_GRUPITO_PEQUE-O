@@ -186,7 +186,7 @@ export default function MessageReader({
 
       {/* 2. EMULATED SCREEN READER TOOLBAR (Matches Screenshots exactly) */}
       <div className={`mb-6 flex items-center justify-between rounded-2xl border px-5 py-3 shadow-xl transition-all ${
-        isOled ? "bg-[#0A0A0C] border-[#1F1F22]" : "bg-zinc-50 border-zinc-200"
+        isOled ? "bg-blue-950/40 border-blue-900/50 shadow-blue-950/10" : "bg-emerald-600 border-emerald-700 shadow-emerald-700/10"
       }`}>
         {/* Left Side: Hamburguer Table of Contents Trigger */}
         <div className="relative">
@@ -194,10 +194,10 @@ export default function MessageReader({
             onClick={() => { setShowTOC(!showTOC); setShowSettings(false); }}
             className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
               showTOC 
-                ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white" 
+                ? "bg-white text-emerald-750 border-transparent shadow-md" 
                 : isOled 
-                  ? "border-[#27272A] bg-[#1E1E22] text-zinc-300 hover:text-[#FDE047]" 
-                  : "border-zinc-200 bg-white text-zinc-650 hover:text-emerald-700 hover:bg-emerald-50/50"
+                  ? "border-blue-900/40 bg-blue-950/80 text-blue-200 hover:text-[#FDE047] hover:border-[#FDE047]/30" 
+                  : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:bg-emerald-800 hover:text-white"
             }`}
             title="Tabla de contenidos de sermón"
           >
@@ -210,7 +210,7 @@ export default function MessageReader({
             <div className={`absolute left-0 mt-2.5 z-50 w-72 rounded-2xl border p-4 shadow-2xl transition-all ${
               isOled ? "bg-[#121215] border-[#27272A] text-zinc-100" : "bg-white border-zinc-200 text-zinc-800"
             }`}>
-              <div className={`flex items-center justify-between border-b pb-2 mb-3 ${isOled ? "border-zinc-800" : "border-zinc-105"}`}>
+              <div className={`flex items-center justify-between border-b pb-2 mb-3 ${isOled ? "border-zinc-800" : "border-zinc-100"}`}>
                 <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-zinc-500">
                   Esquema de Lectura (Estudio)
                 </span>
@@ -249,8 +249,8 @@ export default function MessageReader({
             onClick={onToggleTheme}
             className={`p-2.5 rounded-xl border transition ${
               isOled 
-                ? "border-[#27272A] bg-[#1E1E22] text-[#FDE047] hover:bg-zinc-800" 
-                : "border-zinc-200 bg-white text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-250"
+                ? "border-blue-900/40 bg-blue-950/80 text-[#FDE047] hover:bg-blue-900/60" 
+                : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:bg-emerald-800 hover:text-white"
             }`}
             title={isOled ? "Cambiar a Modo Día (Sage)" : "Cambiar a Modo Noche (OLED)"}
           >
@@ -266,10 +266,10 @@ export default function MessageReader({
             onClick={() => setIsWide(!isWide)}
             className={`p-2.5 rounded-xl border transition ${
               isWide 
-                ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white" 
+                ? "bg-white text-emerald-750 shadow-md border-transparent hover:bg-emerald-50" 
                 : isOled 
-                  ? "border-[#27272A] bg-[#1E1E22] text-zinc-400 hover:text-white" 
-                  : "border-zinc-200 bg-white text-zinc-500 hover:text-emerald-600 hover:bg-emerald-50/50"
+                  ? "border-blue-900/40 bg-blue-950/80 text-blue-300 hover:text-white" 
+                  : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:bg-emerald-800 hover:text-white"
             }`}
             title={isWide ? "Pantalla compacta" : "Pantalla ancha extendida"}
           >
@@ -281,10 +281,10 @@ export default function MessageReader({
             onClick={() => setShowStudyNotes(!showStudyNotes)}
             className={`p-2.5 rounded-xl border transition relative ${
               showStudyNotes 
-                ? "bg-emerald-600 text-white border-transparent shadow shadow-emerald-500/10" 
+                ? "bg-white text-emerald-750 shadow-md border-transparent hover:bg-emerald-50" 
                 : isOled 
-                  ? "border-[#27272A] bg-[#1E1E22] text-zinc-400 hover:text-[#FDE047]" 
-                  : "border-zinc-200 bg-white text-zinc-500 hover:text-emerald-600 hover:bg-emerald-50/50"
+                  ? "border-blue-900/40 bg-blue-950/80 text-blue-300 hover:text-[#FDE047]" 
+                  : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:bg-emerald-800 hover:text-white"
             }`}
             title="Anotador de Estudio Personal"
           >
@@ -300,10 +300,10 @@ export default function MessageReader({
               onClick={() => { setShowSettings(!showSettings); setShowTOC(false); }}
               className={`p-2.5 rounded-xl border transition ${
                 showSettings 
-                  ? "bg-zinc-800 text-white" 
+                  ? "bg-emerald-900 text-white border-transparent shadow-inner" 
                   : isOled 
-                    ? "border-[#27272A] bg-[#1E1E22] text-zinc-400 hover:text-white" 
-                    : "border-zinc-200 bg-white text-zinc-600 hover:text-emerald-700 hover:bg-emerald-50/50"
+                    ? "border-blue-900/40 bg-blue-950/80 text-blue-300 hover:text-white" 
+                    : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:bg-emerald-800 hover:text-white"
               }`}
               title="Ajuste de Lectora"
             >
@@ -324,14 +324,14 @@ export default function MessageReader({
                 {/* Font Selector */}
                 <div className="mb-4">
                   <label className="text-[10px] uppercase font-mono text-zinc-500 font-bold block mb-1.5">Tipografía:</label>
-                  <div className={`grid grid-cols-3 gap-1 rounded-lg border p-1 text-xs ${isOled ? "border-zinc-800 bg-black/40" : "border-zinc-100 bg-zinc-55"}`}>
+                  <div className={`grid grid-cols-3 gap-1 rounded-lg border p-1 text-xs ${isOled ? "border-zinc-800 bg-black/40" : "border-zinc-100 bg-zinc-50"}`}>
                     {(["serif", "sans", "mono"] as const).map((type) => (
                       <button
                         key={type}
                         onClick={() => setFontFamily(type)}
                         className={`py-1 rounded text-center capitalize font-semibold transition ${
                           fontFamily === type 
-                            ? isOled ? "bg-zinc-800 text-white shadow-sm" : "bg-emerald-600 text-white shadow-sm"
+                            ? isOled ? "bg-zinc-850 text-white shadow-sm" : "bg-emerald-600 text-white shadow-sm"
                             : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50"
                         }`}
                       >
@@ -346,7 +346,7 @@ export default function MessageReader({
                   <label className="text-[10px] uppercase font-mono text-zinc-500 font-bold block mb-1.5">
                     Tamaño de letra: <strong className={isOled ? "text-[#FDE047]" : "text-emerald-700"}>{fontSize}px</strong>
                   </label>
-                  <div className={`flex items-center space-x-1.5 rounded-lg border p-1 ${isOled ? "border-zinc-800 bg-black/40" : "border-zinc-100 bg-zinc-55"}`}>
+                  <div className={`flex items-center space-x-1.5 rounded-lg border p-1 ${isOled ? "border-zinc-800 bg-black/40" : "border-zinc-100 bg-zinc-50"}`}>
                     <button
                       onClick={() => setFontSize(Math.max(14, fontSize - 2))}
                       className="flex-grow py-1 text-xs font-bold text-zinc-500 hover:bg-zinc-100/50 rounded transition"
@@ -365,15 +365,15 @@ export default function MessageReader({
             )}
           </div>
 
-          <span className="h-6 w-px bg-zinc-200 self-center mx-1" />
+          <span className={`h-6 w-px self-center mx-1 ${isOled ? "bg-blue-900/60" : "bg-emerald-500"}`} />
 
           {/* 5. Close Reader Button (✕) */}
           <button
             onClick={onBack}
             className={`p-2.5 rounded-xl border transition ${
               isOled 
-                ? "border-red-950/40 bg-[#1E1E22] text-zinc-400 hover:text-red-400 hover:bg-red-950/20" 
-                : "border-zinc-200 bg-white text-zinc-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200"
+                ? "border-red-950/40 bg-blue-950/80 text-zinc-400 hover:text-red-400 hover:bg-red-950/20" 
+                : "border-emerald-500 bg-emerald-700/80 text-emerald-100 hover:text-red-100 hover:bg-red-650 hover:border-red-500"
             }`}
             title="Cerrar sermón actual"
             id="btn-close-reader"

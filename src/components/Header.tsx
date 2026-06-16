@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Search, Users, Database, Sparkles, Heart, Sun, Moon } from "lucide-react";
+import { BookOpen, Search, Users, Database, Sparkles, Heart, Sun, Moon, RefreshCw } from "lucide-react";
 import pozoLogo from "../assets/images/pozo_clean_logo_1780936653610.png";
 
 interface HeaderProps {
@@ -8,6 +8,9 @@ interface HeaderProps {
   bookmarksCount: number;
   theme: "oled" | "day";
   onToggleTheme: () => void;
+  onSync?: () => void;
+  syncing?: boolean;
+  syncSuccess?: boolean;
 }
 
 export default function Header({ 
@@ -15,7 +18,10 @@ export default function Header({
   setActiveTab, 
   bookmarksCount, 
   theme, 
-  onToggleTheme 
+  onToggleTheme,
+  onSync,
+  syncing,
+  syncSuccess
 }: HeaderProps) {
   const isOled = theme === "oled";
 
@@ -112,6 +118,24 @@ export default function Header({
 
         {/* Action Widgets & Theme Toggler */}
         <div className="flex items-center space-x-3">
+          {/* Firestore Sync on Header Button */}
+          {onSync && (
+            <button
+              onClick={onSync}
+              disabled={syncing}
+              className={`flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold tracking-tight transition-all duration-300 active:scale-95 disabled:opacity-75 cursor-pointer ${
+                isOled 
+                  ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 hover:text-[#FDE047] hover:border-[#FDE047]/30"
+                  : "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-750"
+              }`}
+              title="Sincronizar y descargar últimos mensajes desde la base de datos remota"
+              id="btn-header-sync"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              <span className="hidden leading-none sm:inline">{syncing ? "Sincronizando..." : syncSuccess ? "¡Actualizado!" : "Actualizar"}</span>
+            </button>
+          )}
+
           {/* Theme Toggler Switcher Button */}
           <button
             onClick={onToggleTheme}

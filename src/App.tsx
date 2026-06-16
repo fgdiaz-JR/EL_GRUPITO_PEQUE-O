@@ -14,12 +14,16 @@ import {
   MessageSquare,
   HelpCircle,
   FolderOpen,
-  Database
+  Database,
+  RefreshCw,
+  Check
 } from "lucide-react";
 
 import { Message, Series, Bookmark } from "./types";
 import { initialSeries, initialMessages } from "./data/initialData";
 import Header from "./components/Header";
+import { db, handleFirestoreError, OperationType } from "./lib/firebase";
+import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import MessageCard from "./components/MessageCard";
 import MessageReader from "./components/MessageReader";
 import pozoLogo from "./assets/images/pozo_clean_logo_1780936653610.png";
@@ -44,8 +48,18 @@ export default function App() {
 
   const isOled = theme === "oled";
 
-  // Database state
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Database state - immediately loaded with pre-established test messages or cached messages
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const cachedMessages = localStorage.getItem("santibanez_messages");
+    if (cachedMessages) {
+      try {
+        return JSON.parse(cachedMessages);
+      } catch (e) {
+        return initialMessages;
+      }
+    }
+    return initialMessages;
+  });
   const [seriesList] = useState<Series[]>(initialSeries);
   
   // Selected filtered series (for the "Series" tab view)
@@ -61,21 +75,15 @@ export default function App() {
   // Bookmarks
   const [bookmarks, setBookmarks] = useState<string[]>([]);
 
+  // Loading & syncing statuses - false by default so the app opens instantly "de una"
+  const [loading, setLoading] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+
   // 1. Initial State Load
   useEffect(() => {
-    // Load messages from localStorage, or use default dataset
-    const cachedMessages = localStorage.getItem("santibanez_messages");
-    if (cachedMessages) {
-      try {
-        setMessages(JSON.parse(cachedMessages));
-      } catch (e) {
-        setMessages(initialMessages);
-      }
-    } else {
-      setMessages(initialMessages);
-      localStorage.setItem("santibanez_messages", JSON.stringify(initialMessages));
-    }
-
     // Load bookmarks
     const cachedBookmarks = localStorage.getItem("santibanez_bookmarks");
     if (cachedBookmarks) {
@@ -87,13 +95,95 @@ export default function App() {
     }
   }, []);
 
+  // Manual update/download action from Firestore database
+  const handleSyncFromFirestore = async () => {
+    setSyncing(true);
+    setSyncError(null);
+    setSyncSuccess(false);
+    const collectionPath = "mensajes";
+    try {
+      const querySnapshot = await getDocs(collection(db, collectionPath));
+      const list: Message[] = [];
+      querySnapshot.forEach((docSnap) => {
+        list.push({ id: docSnap.id, ...docSnap.data() } as Message);
+      });
+
+      if (list.length > 0) {
+        setMessages(list);
+        localStorage.setItem("santibanez_messages", JSON.stringify(list));
+        setSyncSuccess(true);
+        // Fade success status after 3 seconds
+        setTimeout(() => setSyncSuccess(false), 3000);
+      } else {
+        // If Firestore collection has no items, keep local state
+        setSyncError("La base de datos en la nube está vacía. Se conservan los mensajes preestablecidos.");
+        // Hide error after 5 seconds
+        setTimeout(() => setSyncError(null), 5000);
+      }
+    } catch (error) {
+      console.error("Firebase fetch error:", error);
+      setSyncError("Error de conexión al sincronizar con la base de datos.");
+      setTimeout(() => setSyncError(null), 5000);
+      try {
+        handleFirestoreError(error, OperationType.GET, collectionPath);
+      } catch (wrappedError) {
+        // Exception caught and logged
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // 1.5 Seed mock messages helper
+  const handleSeedMessages = async () => {
+    setSeeding(true);
+    setSyncError(null);
+    try {
+      const seededList: Message[] = [...initialMessages];
+      for (const msg of seededList) {
+        await setDoc(doc(db, "mensajes", msg.id), {
+          id: msg.id,
+          codigo: msg.codigo,
+          titulo: msg.titulo,
+          fecha: msg.fecha,
+          serie_id: msg.serie_id,
+          contenido: msg.contenido
+        });
+      }
+      setMessages(seededList);
+    } catch (error) {
+      console.error("Error seeding to Firestore:", error);
+      setSyncError("Error al cargar los mensajes de prueba.");
+      try {
+        handleFirestoreError(error, OperationType.WRITE, "mensajes");
+      } catch (wrappedError) {
+        // Exception captured and logged
+      }
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   // 2. Persist state helper
-  const handleAddNewMessage = (newMsg: Message) => {
-    setMessages((prev) => {
-      const updated = [newMsg, ...prev];
-      localStorage.setItem("santibanez_messages", JSON.stringify(updated));
-      return updated;
-    });
+  const handleAddNewMessage = async (newMsg: Message) => {
+    // Optimistic local state update
+    setMessages((prev) => [newMsg, ...prev]);
+    
+    // Remote Firestore persist
+    const path = `mensajes/${newMsg.id}`;
+    try {
+      await setDoc(doc(db, "mensajes", newMsg.id), {
+        id: newMsg.id,
+        codigo: newMsg.codigo,
+        titulo: newMsg.titulo,
+        fecha: newMsg.fecha,
+        serie_id: newMsg.serie_id,
+        contenido: newMsg.contenido
+      });
+    } catch (error) {
+      console.error("Error writing message to Firestore:", error);
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
   };
 
   // 3. Bookmark handling
@@ -153,6 +243,44 @@ export default function App() {
     return seriesList.find((s) => s.id === currentlyReadingMessage.serie_id);
   }, [currentlyReadingMessage, seriesList]);
 
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center font-sans antialiased ${
+        isOled ? "bg-[#000000] text-white" : "bg-zinc-50 text-emerald-950"
+      }`}>
+        <div className="flex flex-col items-center space-y-6">
+          <div className="relative">
+            <div className={`absolute -inset-1.5 rounded-full blur opacity-40 animate-pulse ${
+              isOled ? "bg-[#FDE047]" : "bg-emerald-600"
+            }`} />
+            <div className={`relative p-2 rounded-full border shadow-2xl ${
+              isOled ? "bg-black border-zinc-800" : "bg-white border-zinc-200"
+            }`}>
+              <img 
+                src={pozoLogo} 
+                alt="Logo El Grupito Pequeño" 
+                className="h-24 w-24 rounded-full object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            {/* Spinning load track */}
+            <div className={`absolute inset-0 rounded-full border-2 border-t-transparent animate-spin ${
+              isOled ? "border-[#FDE047]" : "border-emerald-600"
+            }`} />
+          </div>
+
+          <div className="text-center space-y-2">
+            <h3 className="font-serif text-xl font-bold tracking-tight">
+              Conectando al Archivo...
+            </h3>
+            <p className="text-xs text-zinc-500 font-mono">
+              Estableciendo conexión segura con Cloud Firestore...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen flex flex-col font-sans antialiased transition-colors duration-500 ${
@@ -171,6 +299,9 @@ export default function App() {
         bookmarksCount={bookmarks.length}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        onSync={handleSyncFromFirestore}
+        syncing={syncing}
+        syncSuccess={syncSuccess}
       />
 
       {/* Main layout viewport container */}
@@ -244,16 +375,7 @@ export default function App() {
                         <Compass className="h-3 w-3" />
                         Archivo Patrimonial Digital
                       </span>
-                      <h2 className={`font-serif text-3xl font-extrabold tracking-tight sm:text-5xl ${
-                        isOled ? "text-white" : "text-emerald-950"
-                      }`}>
-                        Saber, Creer, Vivir.
-                      </h2>
-                      <p className={`mt-4 text-sm sm:text-base leading-relaxed font-serif italic ${
-                        isOled ? "text-zinc-300" : "text-emerald-850"
-                      }`}>
-                        "Conserva el testimonio y las enseñanzas que formaron los valores y el carácter de nuestra comunidad."
-                      </p>
+
                       
                       {/* Search quick button */}
                       <div className="mt-8 flex justify-center">
@@ -276,7 +398,9 @@ export default function App() {
                   <div>
                     <div className="mb-6 flex items-center justify-between">
                       <div>
-                        <h3 className="font-serif text-2xl font-bold text-white">
+                        <h3 className={`font-serif text-2xl font-bold ${
+                          isOled ? "text-white" : "text-emerald-950"
+                        }`}>
                           Mensajes Recientes
                         </h3>
                         <p className="text-zinc-500 text-xs">
@@ -284,27 +408,110 @@ export default function App() {
                         </p>
                       </div>
 
-                      <div className="text-xs font-mono text-zinc-500">
-                        {messages.length} mensajes en archivo
+                      <div className="flex items-center">
+                        {/* Manual sync button */}
+                        <button
+                          onClick={handleSyncFromFirestore}
+                          disabled={syncing}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold tracking-tight active:scale-95 disabled:opacity-75 transition-all cursor-pointer ${
+                            isOled 
+                              ? "bg-[#121214] border-[#27272A] text-zinc-300 hover:text-[#FDE047] hover:border-[#FDE047]/20" 
+                              : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                          }`}
+                          title="Sincronizar y descargar mensajes desde la base de datos remota"
+                        >
+                          <RefreshCw className={`h-3 w-3 ${syncing ? "animate-spin" : ""}`} />
+                          {syncing ? "Actualizando..." : syncSuccess ? "¡Actualizado!" : "Actualizar desde la Nube"}
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {sortedRecentMessages.map((msg) => (
-                        <MessageCard 
-                          key={msg.id}
-                          message={msg}
-                          series={seriesList.find((s) => s.id === msg.serie_id)}
-                          onClick={() => setSelectedMessageId(msg.id)}
-                          isBookmarked={bookmarks.includes(msg.id)}
-                          onToggleBookmark={(e) => {
-                            e.stopPropagation();
-                            handleToggleBookmark(msg.id);
-                          }}
-                          theme={theme}
-                        />
-                      ))}
-                    </div>
+                    {/* Database status feedback banner */}
+                    {(syncError || syncSuccess) && (
+                      <div className={`mb-6 p-4 rounded-2xl border text-xs font-mono flex items-center justify-between transition-all ${
+                        syncError 
+                          ? isOled 
+                            ? "bg-red-950/20 border-red-900/30 text-red-400" 
+                            : "bg-red-50 border-red-100 text-red-700"
+                          : isOled 
+                            ? "bg-emerald-950/20 border-emerald-900/30 text-[#FDE047]" 
+                            : "bg-emerald-50 border-emerald-100 text-emerald-800"
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <Database className="h-4 w-4 shrink-0" />
+                          <span>{syncError || "¡Sincronización finalizada con éxito! El catálogo ha sido actualizado con los mensajes de la nube."}</span>
+                        </div>
+                        <button 
+                          onClick={() => { setSyncError(null); setSyncSuccess(false); }}
+                          className="p-1 rounded-lg hover:bg-black/10 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    {messages.length === 0 ? (
+                      <div className={`rounded-3xl border border-dashed p-12 text-center max-w-lg mx-auto ${
+                        isOled ? "border-[#27272A] bg-[#0A0A0C]/40" : "border-emerald-100 bg-emerald-50/20"
+                      }`}>
+                        <div className="flex justify-center mb-5">
+                          <div className={`p-4 rounded-2xl ${
+                            isOled ? "bg-zinc-900 border border-zinc-800" : "bg-emerald-50 border border-emerald-100"
+                          }`}>
+                            <Database className={`h-8 w-8 ${isOled ? "text-[#FDE047]" : "text-emerald-600"}`} />
+                          </div>
+                        </div>
+                        <h4 className={`text-lg font-bold font-serif ${isOled ? "text-white" : "text-emerald-950"}`}>
+                          Base de Datos Vacía
+                        </h4>
+                        <p className={`mt-2 text-sm leading-relaxed max-w-sm mx-auto ${
+                          isOled ? "text-zinc-500" : "text-zinc-650"
+                        }`}>
+                          No se encontraron sermones en tu base de datos de Cloud Firestore. Puedes descargar el catálogo o subir el catálogo inicial con los mensajes de prueba.
+                        </p>
+                        
+                        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center items-center">
+                          <button
+                            onClick={handleSeedMessages}
+                            disabled={seeding}
+                            className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-50 ${
+                              isOled 
+                                ? "bg-[#FDE047] text-[#121212] hover:bg-[#FDE047]/95" 
+                                : "bg-emerald-600 text-white hover:bg-emerald-500"
+                            }`}
+                          >
+                            {seeding ? (
+                              <>
+                                <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                Creando catálogo...
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="h-4.5 w-4.5" />
+                                Subir Mensajes de Prueba a Firestore
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {sortedRecentMessages.map((msg) => (
+                          <MessageCard 
+                            key={msg.id}
+                            message={msg}
+                            series={seriesList.find((s) => s.id === msg.serie_id)}
+                            onClick={() => setSelectedMessageId(msg.id)}
+                            isBookmarked={bookmarks.includes(msg.id)}
+                            onToggleBookmark={(e) => {
+                              e.stopPropagation();
+                              handleToggleBookmark(msg.id);
+                            }}
+                            theme={theme}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

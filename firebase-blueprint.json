@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "Un sermon o mensaje en formato Markdown con sus metadatos.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador unico del mensaje"
+        },
+        "codigo": {
+          "type": "string",
+          "description": "Codigo unico del sermon (ej. SANT-2026-01)"
+        },
+        "titulo": {
+          "type": "string",
+          "description": "Titulo del sermon"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date",
+          "description": "Fecha del sermon en formato YYYY-MM-DD"
+        },
+        "serie_id": {
+          "type": "string",
+          "description": "ID de la serie a la que pertenece"
+        },
+        "contenido": {
+          "type": "string",
+          "description": "Cuerpo completo de texto en formato Markdown"
+        }
+      },
+      "required": ["id", "codigo", "titulo", "fecha", "serie_id", "contenido"]
+    }
+  },
+  "firestore": {
+    "/mensajes/{mensajeId}": {
+      "schema": "Message",
+      "description": "Coleccion publica de sermones de la comunidad para lectura Offline."
+    }
+  }
+}
