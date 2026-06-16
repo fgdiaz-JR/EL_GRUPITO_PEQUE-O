@@ -122,8 +122,9 @@ export default function App() {
       }
     } catch (error) {
       console.error("Firebase fetch error:", error);
-      setSyncError("Error de conexión al sincronizar con la base de datos.");
-      setTimeout(() => setSyncError(null), 5000);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      setSyncError(`Error de conexión: ${errMsg}`);
+      setTimeout(() => setSyncError(null), 10000);
       try {
         handleFirestoreError(error, OperationType.GET, collectionPath);
       } catch (wrappedError) {
