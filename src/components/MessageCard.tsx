@@ -97,13 +97,21 @@ export default function MessageCard({
         </div>
 
         {/* Title */}
-        <h3 className={`font-serif text-lg font-bold transition-colors leading-snug mb-2.5 ${
+        <h3 className={`font-serif text-lg font-bold transition-colors leading-snug mb-1.5 ${
           isOled 
             ? "text-white group-hover:text-[#FDE047]" 
             : "text-zinc-900 group-hover:text-emerald-700"
         }`}>
           {highlight(message.titulo, searchTerm)}
         </h3>
+
+        {/* Expositor Line */}
+        <p className="text-xs font-mono uppercase tracking-wide mb-2.5 text-zinc-500 flex items-center gap-1">
+          <span className="font-bold">Expositor:</span>
+          <span className={isOled ? "text-zinc-300" : "text-zinc-700"}>
+            {highlight(message.autor || "Pastor Santibáñez", searchTerm)}
+          </span>
+        </p>
 
         {/* Excerpt with potential highlight too! */}
         <p className={`text-sm leading-relaxed mb-4 transition-colors ${

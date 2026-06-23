@@ -2,25 +2,25 @@
   "entities": {
     "Message": {
       "title": "Message",
-      "description": "Un sermon o mensaje en formato Markdown con sus metadatos.",
+      "description": "Un sermón o mensaje en formato Markdown con sus metadatos.",
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Identificador unico del mensaje"
+          "description": "Identificador único del mensaje"
         },
         "codigo": {
           "type": "string",
-          "description": "Codigo unico del sermon (ej. SANT-2026-01)"
+          "description": "Código único del sermón (ej. SANT-2026-01)"
         },
         "titulo": {
           "type": "string",
-          "description": "Titulo del sermon"
+          "description": "Título del sermón"
         },
         "fecha": {
           "type": "string",
           "format": "date",
-          "description": "Fecha del sermon en formato YYYY-MM-DD"
+          "description": "Fecha del sermón en formato YYYY-MM-DD"
         },
         "serie_id": {
           "type": "string",
@@ -29,15 +29,55 @@
         "contenido": {
           "type": "string",
           "description": "Cuerpo completo de texto en formato Markdown"
+        },
+        "autor": {
+          "type": "string",
+          "description": "Autor o expositor del sermón"
         }
       },
       "required": ["id", "codigo", "titulo", "fecha", "serie_id", "contenido"]
+    },
+    "Series": {
+      "title": "Series",
+      "description": "Una serie temática que agrupa sermones de un tema específico.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único de la serie"
+        },
+        "titulo": {
+          "type": "string",
+          "description": "Título de la serie"
+        },
+        "descripcion": {
+          "type": "string",
+          "description": "Descripción del tema de la serie"
+        },
+        "color": {
+          "type": "string",
+          "description": "Clases CSS o valor hexadecimal de color para estilizar la serie"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Nombre de icono Lucide a renderizar para la serie"
+        }
+      },
+      "required": ["id", "titulo", "descripcion", "color", "icon"]
     }
   },
   "firestore": {
     "/mensajes/{mensajeId}": {
       "schema": "Message",
-      "description": "Coleccion publica de sermones de la comunidad para lectura Offline."
+      "description": "Colección pública de sermones de la comunidad para lectura Offline."
+    },
+    "/sermones/{sermonId}": {
+      "schema": "Message",
+      "description": "Colección principal de sermones de la comunidad."
+    },
+    "/series/{seriesId}": {
+      "schema": "Series",
+      "description": "Colección de series y temáticas para organizar los sermones."
     }
   }
 }

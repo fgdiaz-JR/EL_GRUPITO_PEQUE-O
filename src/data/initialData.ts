@@ -38,6 +38,7 @@ export const initialMessages: Message[] = [
     titulo: "El Clamor de la Oración en Tiempos de Cambio",
     fecha: "2026-01-10",
     serie_id: "reflexiones-fe",
+    autor: "Pastor Santibáñez",
     contenido: `# El Clamor de la Oración en Tiempos de Cambio
 
 La verdadera fuerza de una comunidad reside en su capacidad para detenerse y unirse en un solo clamor. La **oración** no es el último recurso ante la dificultad, sino el fundamento de cada paso que damos.
@@ -63,6 +64,7 @@ Que este año 2026 sea una temporada donde nuestro altar de oración nunca perma
     titulo: "Edificando un Hogar sobre la Roca Abundante",
     fecha: "2026-02-05",
     serie_id: "familia-hogar",
+    autor: "Pastor Santibáñez",
     contenido: `# Edificando un Hogar sobre la Roca Abundante
 
 La **familia** es la primera escuela del alma. Los cimientos de un hogar no se miden por el cemento o sus ladrillos, sino por la fortaleza de los valores que dentro de él se transmiten día tras día.
@@ -84,6 +86,7 @@ Transmitir fe y civismo no se hace con discursos largos, sino con el ejemplo dia
     titulo: "Nuestra Identidad en el Servicio Mutuo de EL GRUPITO PEQUEÑO",
     fecha: "2026-03-14",
     serie_id: "vida-comunitaria",
+    autor: "Pastor Santibáñez",
     contenido: `# Nuestra Identidad en el Servicio Mutuo
 
 Nuestra comunidad en **EL GRUPITO PEQUEÑO** se caracteriza por un espíritu inquebrantable de ayuda mutua. Servir no es una tarea obligada, sino la expresión física del amor que profesamos.
@@ -104,6 +107,7 @@ Recuerda que el que no vive para servir, no sirve para vivir. Busquemos esta sem
     titulo: "El Estudio de las Escrituras y la Sabiduría Diaria",
     fecha: "2026-04-02",
     serie_id: "estudios-tematicos",
+    autor: "Misionera Elena",
     contenido: `# El Estudio de las Escrituras y la Sabiduría Diaria
 
 Sumergirse en los textos antiguos no es una actividad puramente intelectual. Es una búsqueda del mapa del alma que nos guía para habitar de manera armoniosa en este mundo.
@@ -124,6 +128,7 @@ Proponeos leer un capítulo con detenimiento cada mañana. Anotad vuestro pasaje
     titulo: "La Esperanza en la Incertidumbre: Una Luz que No se Apaga",
     fecha: "2026-05-18",
     serie_id: "reflexiones-fe",
+    autor: "Pastor Santibáñez",
     contenido: `# La Esperanza en la Incertidumbre: Una Luz que No se Apaga
 
 ¿Cómo mantener la **esperanza** cuando las circunstancias a nuestro alrededor parecen confusas y las nubes de la incertidumbre cubren el horizonte? 
@@ -146,6 +151,7 @@ Mantén tu mirada alta, porque tu redención está cerca. No estás solo en el c
     titulo: "La Paciencia en la Siembra y la Cosecha Espiritual",
     fecha: "2025-11-20",
     serie_id: "estudios-tematicos",
+    autor: "Misionera Elena",
     contenido: `# La Paciencia en la Siembra y la Cosecha Espiritual
 
 En la agricultura de **EL GRUPITO PEQUEÑO**, todos sabemos que no puedes plantar una semilla hoy y cosechar sus frutos mañana. Se requiere tiempo, riego, cuidado y, por encima de todo, una profunda **paciencia**.
@@ -166,6 +172,7 @@ No te canses de hacer el bien, porque a su debido tiempo cosecharemos si no desm
     titulo: "El Diálogo Intergeneracional en la Familia Moderna",
     fecha: "2025-12-05",
     serie_id: "familia-hogar",
+    autor: "Pastor Santibáñez",
     contenido: `# El Diálogo Intergeneracional en la Familia Moderna
 
 Uno de los mayores desafíos del siglo XXI es el abismo que se abre entre abuelos, padres e hijos. Los rápidos cambios tecnológicos amenazan con cortar la transmisión de la sabiduría ancestral.
@@ -186,6 +193,7 @@ No permitamos que el ruido del televisor silencie las benditas voces de la exper
     titulo: "El Valor de la Unidad Comunitaria ante los Retos",
     fecha: "2025-12-25",
     serie_id: "vida-comunitaria",
+    autor: "Pastor Santibáñez",
     contenido: `# El Valor de la Unidad Comunitaria ante los Retos
 
 En este frío mes de diciembre, recordamos que el calor no solo proviene de la leña, sino de nuestros corazones unidos. El verdadero sentido de la **comunidad** en **EL GRUPITO PEQUEÑO** se revela cuando el clima se endurece.

@@ -5,6 +5,7 @@ export interface Message {
   fecha: string;
   serie_id: string;
   contenido: string;
+  autor?: string;
 }
 
 export interface Series {

@@ -23,7 +23,7 @@ import { Message, Series, Bookmark } from "./types";
 import { initialSeries, initialMessages } from "./data/initialData";
 import Header from "./components/Header";
 import { db, handleFirestoreError, OperationType } from "./lib/firebase";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, getDocsFromServer } from "firebase/firestore";
 import MessageCard from "./components/MessageCard";
 import MessageReader from "./components/MessageReader";
 import pozoLogo from "./assets/images/pozo_clean_logo_1780936653610.png";
@@ -83,6 +83,8 @@ export default function App() {
   // Search query
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSeriesFilter, setSearchSeriesFilter] = useState<string>("all");
+  const [searchYearFilter, setSearchYearFilter] = useState<string>("all");
+  const [searchAuthorFilter, setSearchAuthorFilter] = useState<string>("all");
   
   // Bookmarks
   const [bookmarks, setBookmarks] = useState<string[]>([]);
@@ -128,10 +130,11 @@ export default function App() {
     let list: Message[] = [];
     let detectedColl: "mensajes" | "sermones" = "mensajes";
     let collectionsFetchedSuccessfully = 0;
+    let syncDiagnostics: string[] = [];
 
     // 1. Attempt reading 'sermones' collection
     try {
-      const sermonesSnapshot = await getDocs(collection(db, "sermones"));
+      const sermonesSnapshot = await getDocsFromServer(collection(db, "sermones"));
       collectionsFetchedSuccessfully++;
       if (!sermonesSnapshot.empty) {
         sermonesSnapshot.forEach((docSnap) => {
@@ -139,14 +142,17 @@ export default function App() {
         });
         detectedColl = "sermones";
         setActiveCollection("sermones");
+      } else {
+        syncDiagnostics.push("Colección 'sermones' devuelta vacía.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Could not retrieve documents from 'sermones' collection:", err);
+      syncDiagnostics.push(`Error al leer 'sermones': ${err?.message || err}`);
     }
 
     // 2. Attempt reading 'mensajes' collection (as fallback or to merge)
     try {
-      const mensajesSnapshot = await getDocs(collection(db, "mensajes"));
+      const mensajesSnapshot = await getDocsFromServer(collection(db, "mensajes"));
       collectionsFetchedSuccessfully++;
       if (!mensajesSnapshot.empty) {
         if (list.length === 0) {
@@ -159,14 +165,17 @@ export default function App() {
             list.push({ id: docSnap.id, ...docSnap.data() } as Message);
           }
         });
+      } else {
+        syncDiagnostics.push("Colección 'mensajes' devuelta vacía.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Could not retrieve documents from 'mensajes' collection:", err);
+      syncDiagnostics.push(`Error al leer 'mensajes': ${err?.message || err}`);
     }
 
     // 3. Attempt reading 'series' collection
     try {
-      const seriesSnapshot = await getDocs(collection(db, "series"));
+      const seriesSnapshot = await getDocsFromServer(collection(db, "series"));
       if (!seriesSnapshot.empty) {
         const localSeries: Series[] = [];
         seriesSnapshot.forEach((docSnap) => {
@@ -174,9 +183,12 @@ export default function App() {
         });
         setSeriesList(localSeries);
         localStorage.setItem("santibanez_series", JSON.stringify(localSeries));
+      } else {
+        syncDiagnostics.push("Colección 'series' devuelta vacía.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Could not retrieve custom 'series' collection:", err);
+      syncDiagnostics.push(`Error al leer 'series': ${err?.message || err}`);
     }
 
     setSyncing(false);
@@ -186,16 +198,16 @@ export default function App() {
       localStorage.setItem("santibanez_messages", JSON.stringify(list));
       if (showAlerts) {
         setSyncSuccess(true);
-        setTimeout(() => setSyncSuccess(false), 3000);
+        setTimeout(() => setSyncSuccess(false), 4000);
       }
     } else {
       if (showAlerts) {
         if (collectionsFetchedSuccessfully === 0) {
-          setSyncError("Error de conexión al sincronizar con la base de datos.");
+          setSyncError(`Error de conexión al sincronizar con la base de datos: ${syncDiagnostics.join(" | ")}`);
         } else {
-          setSyncError("La base de datos en la nube está vacía. Se conservan los mensajes preestablecidos.");
+          setSyncError(`No se encontraron sermones en las colecciones. Diagnóstico: ${syncDiagnostics.join(" / ")}`);
         }
-        setTimeout(() => setSyncError(null), 7000);
+        setTimeout(() => setSyncError(null), 15000);
       }
     }
   };
@@ -276,29 +288,58 @@ export default function App() {
     return [...messages].sort((a, b) => b.fecha.localeCompare(a.fecha));
   }, [messages]);
 
+  const uniqueYears = useMemo(() => {
+    const years = new Set<string>();
+    messages.forEach((m) => {
+      if (m.fecha) {
+        const yr = m.fecha.substring(0, 4);
+        if (/^\d{4}$/.test(yr)) {
+          years.add(yr);
+        }
+      }
+    });
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [messages]);
+
+  const uniqueAuthors = useMemo(() => {
+    const authors = new Set<string>();
+    messages.forEach((m) => {
+      const author = m.autor || "Pastor Santibáñez";
+      authors.add(author.trim());
+    });
+    return Array.from(authors).sort();
+  }, [messages]);
+
   const filteredSeriesMessages = useMemo(() => {
     if (!selectedSeriesId) return [];
     return sortedRecentMessages.filter((m) => m.serie_id === selectedSeriesId);
   }, [selectedSeriesId, sortedRecentMessages]);
 
   const searchedMessages = useMemo(() => {
-    if (!searchQuery.trim() && searchSeriesFilter === "all") {
+    if (!searchQuery.trim() && searchSeriesFilter === "all" && searchYearFilter === "all" && searchAuthorFilter === "all") {
       return sortedRecentMessages;
     }
     
     return sortedRecentMessages.filter((m) => {
       const matchSeries = searchSeriesFilter === "all" || m.serie_id === searchSeriesFilter;
       
+      const yr = m.fecha ? m.fecha.substring(0, 4) : "";
+      const matchYear = searchYearFilter === "all" || yr === searchYearFilter;
+      
+      const author = m.autor || "Pastor Santibáñez";
+      const matchAuthor = searchAuthorFilter === "all" || author.trim().toLowerCase() === searchAuthorFilter.trim().toLowerCase();
+      
       const query = searchQuery.toLowerCase().trim();
-      if (!query) return matchSeries;
+      if (!query) return matchSeries && matchYear && matchAuthor;
       
       const matchTitle = m.titulo.toLowerCase().includes(query);
       const matchContent = m.contenido.toLowerCase().includes(query);
       const matchCode = m.codigo.toLowerCase().includes(query);
+      const matchAuthorText = author.toLowerCase().includes(query);
       
-      return matchSeries && (matchTitle || matchContent || matchCode);
+      return matchSeries && matchYear && matchAuthor && (matchTitle || matchContent || matchCode || matchAuthorText);
     });
-  }, [searchQuery, searchSeriesFilter, sortedRecentMessages]);
+  }, [searchQuery, searchSeriesFilter, searchYearFilter, searchAuthorFilter, sortedRecentMessages]);
 
   const bookmarkedMessages = useMemo(() => {
     return sortedRecentMessages.filter((m) => bookmarks.includes(m.id));
@@ -775,16 +816,15 @@ export default function App() {
                   <div className={`mb-8 rounded-2xl border p-6 shadow-xl ${
                     isOled ? "border-[#27272A] bg-[#0A0A0C]" : "border-zinc-200 bg-zinc-50"
                   }`}>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                      
-                      {/* Text Input */}
-                      <div className="relative flex-grow">
+                    <div className="flex flex-col gap-4">
+                      {/* First row: Text input */}
+                      <div className="relative w-full">
                         <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                         <input
                           type="text"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Buscar por palabra clave (ej: 'oración', 'paciencia', 'EL GRUPITO PEQUEÑO', 'familia')..."
+                          placeholder="Buscar por palabra clave, código, autor o contenido..."
                           className={`w-full rounded-xl border pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-1 transition-all font-sans ${
                             isOled 
                               ? "bg-[#1E1E22] border-[#27272A] text-white placeholder-zinc-500 focus:border-[#FDE047] focus:ring-[#FDE047]" 
@@ -803,22 +843,70 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Dropdown series filter */}
-                      <div className="min-w-[200px]">
-                        <select
-                          value={searchSeriesFilter}
-                          onChange={(e) => setSearchSeriesFilter(e.target.value)}
-                          className={`w-full rounded-xl border px-3 py-3 text-sm focus:outline-none focus:ring-1 transition-all font-sans ${
-                            isOled 
-                              ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 focus:border-[#FDE047] focus:ring-[#FDE047]" 
-                              : "bg-white border-zinc-200 text-zinc-700 focus:border-emerald-500 focus:ring-emerald-500"
-                          }`}
-                        >
-                          <option value="all">Ver todas las Series</option>
-                          {seriesList.map((s) => (
-                            <option key={s.id} value={s.id}>{s.titulo}</option>
-                          ))}
-                        </select>
+                      {/* Second row: Three filters (Series, Year, Author) side-by-side */}
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        {/* Dropdown series filter */}
+                        <div>
+                          <label className={`block text-[10px] uppercase font-mono tracking-wider mb-1.5 font-bold ${isOled ? "text-zinc-400" : "text-zinc-500"}`}>
+                            Filtrar por Serie:
+                          </label>
+                          <select
+                            value={searchSeriesFilter}
+                            onChange={(e) => setSearchSeriesFilter(e.target.value)}
+                            className={`w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-1 transition-all font-sans ${
+                              isOled 
+                                ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 focus:border-[#FDE047] focus:ring-[#FDE047]" 
+                                : "bg-white border-zinc-200 text-zinc-700 focus:border-emerald-500 focus:ring-emerald-500"
+                            }`}
+                          >
+                            <option value="all">Todas las Series (Ver Todo)</option>
+                            {seriesList.map((s) => (
+                              <option key={s.id} value={s.id}>{s.titulo}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Dropdown year filter */}
+                        <div>
+                          <label className={`block text-[10px] uppercase font-mono tracking-wider mb-1.5 font-bold ${isOled ? "text-zinc-400" : "text-zinc-500"}`}>
+                            Filtrar por Año:
+                          </label>
+                          <select
+                            value={searchYearFilter}
+                            onChange={(e) => setSearchYearFilter(e.target.value)}
+                            className={`w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-1 transition-all font-sans ${
+                              isOled 
+                                ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 focus:border-[#FDE047] focus:ring-[#FDE047]" 
+                                : "bg-white border-zinc-200 text-zinc-700 focus:border-emerald-500 focus:ring-emerald-500"
+                            }`}
+                          >
+                            <option value="all">Todos los Años (Ver Todo)</option>
+                            {uniqueYears.map((year) => (
+                              <option key={year} value={year}>{year}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Dropdown author filter */}
+                        <div>
+                          <label className={`block text-[10px] uppercase font-mono tracking-wider mb-1.5 font-bold ${isOled ? "text-zinc-400" : "text-zinc-500"}`}>
+                            Filtrar por Expositor/Autor:
+                          </label>
+                          <select
+                            value={searchAuthorFilter}
+                            onChange={(e) => setSearchAuthorFilter(e.target.value)}
+                            className={`w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-1 transition-all font-sans ${
+                              isOled 
+                                ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 focus:border-[#FDE047] focus:ring-[#FDE047]" 
+                                : "bg-white border-zinc-200 text-zinc-700 focus:border-emerald-500 focus:ring-emerald-500"
+                            }`}
+                          >
+                            <option value="all">Todos los Expositores (Ver Todo)</option>
+                            {uniqueAuthors.map((author) => (
+                              <option key={author} value={author}>{author}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 

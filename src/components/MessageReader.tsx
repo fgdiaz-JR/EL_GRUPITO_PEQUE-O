@@ -23,7 +23,8 @@ import {
   Settings,
   X,
   BookOpen,
-  FileText
+  FileText,
+  User
 } from "lucide-react";
 
 interface MessageReaderProps {
@@ -427,6 +428,13 @@ export default function MessageReader({
                   {series.titulo}
                 </span>
               )}
+
+              <span className={`inline-flex items-center gap-1 border px-3 py-1.5 rounded-lg font-semibold ${
+                isOled ? "bg-[#1E1E22] border-[#27272A] text-zinc-350" : "bg-zinc-50 border-zinc-150 text-zinc-650"
+              }`}>
+                <User className="h-3.5 w-3.5 text-zinc-400" />
+                Expositor: {message.autor || "Pastor Santibáñez"}
+              </span>
             </div>
 
             {/* Dynamic reading layout section */}
