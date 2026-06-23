@@ -60,7 +60,19 @@ export default function App() {
     }
     return initialMessages;
   });
-  const [seriesList] = useState<Series[]>(initialSeries);
+  const [seriesList, setSeriesList] = useState<Series[]>(() => {
+    const cachedSeries = localStorage.getItem("santibanez_series");
+    if (cachedSeries) {
+      try {
+        return JSON.parse(cachedSeries);
+      } catch (e) {
+        return initialSeries;
+      }
+    }
+    return initialSeries;
+  });
+
+  const [activeCollection, setActiveCollection] = useState<"mensajes" | "sermones">("mensajes");
   
   // Selected filtered series (for the "Series" tab view)
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
@@ -93,46 +105,104 @@ export default function App() {
         setBookmarks([]);
       }
     }
+
+    // Auto-sync silently on initial mount
+    const loadAndSyncOnMount = async () => {
+      try {
+        await syncDataFromDatabase(false); // Silently sync without popping errors on initial load
+      } catch (e) {
+        console.warn("Silent auto-sync failed:", e);
+      }
+    };
+    loadAndSyncOnMount();
   }, []);
 
-  // Manual update/download action from Firestore database
-  const handleSyncFromFirestore = async () => {
+  // Universal database synchronizer (supports both 'sermones' and 'mensajes' collections, and 'series')
+  const syncDataFromDatabase = async (showAlerts: boolean = true) => {
     setSyncing(true);
-    setSyncError(null);
-    setSyncSuccess(false);
-    const collectionPath = "mensajes";
-    try {
-      const querySnapshot = await getDocs(collection(db, collectionPath));
-      const list: Message[] = [];
-      querySnapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as Message);
-      });
-
-      if (list.length > 0) {
-        setMessages(list);
-        localStorage.setItem("santibanez_messages", JSON.stringify(list));
-        setSyncSuccess(true);
-        // Fade success status after 3 seconds
-        setTimeout(() => setSyncSuccess(false), 3000);
-      } else {
-        // If Firestore collection has no items, keep local state
-        setSyncError("La base de datos en la nube está vacía. Se conservan los mensajes preestablecidos.");
-        // Hide error after 5 seconds
-        setTimeout(() => setSyncError(null), 5000);
-      }
-    } catch (error) {
-      console.error("Firebase fetch error:", error);
-      const errMsg = error instanceof Error ? error.message : String(error);
-      setSyncError(`Error de conexión: ${errMsg}`);
-      setTimeout(() => setSyncError(null), 10000);
-      try {
-        handleFirestoreError(error, OperationType.GET, collectionPath);
-      } catch (wrappedError) {
-        // Exception caught and logged
-      }
-    } finally {
-      setSyncing(false);
+    if (showAlerts) {
+      setSyncError(null);
+      setSyncSuccess(false);
     }
+    
+    let list: Message[] = [];
+    let detectedColl: "mensajes" | "sermones" = "mensajes";
+    let collectionsFetchedSuccessfully = 0;
+
+    // 1. Attempt reading 'sermones' collection
+    try {
+      const sermonesSnapshot = await getDocs(collection(db, "sermones"));
+      collectionsFetchedSuccessfully++;
+      if (!sermonesSnapshot.empty) {
+        sermonesSnapshot.forEach((docSnap) => {
+          list.push({ id: docSnap.id, ...docSnap.data() } as Message);
+        });
+        detectedColl = "sermones";
+        setActiveCollection("sermones");
+      }
+    } catch (err) {
+      console.warn("Could not retrieve documents from 'sermones' collection:", err);
+    }
+
+    // 2. Attempt reading 'mensajes' collection (as fallback or to merge)
+    try {
+      const mensajesSnapshot = await getDocs(collection(db, "mensajes"));
+      collectionsFetchedSuccessfully++;
+      if (!mensajesSnapshot.empty) {
+        if (list.length === 0) {
+          detectedColl = "mensajes";
+          setActiveCollection("mensajes");
+        }
+        mensajesSnapshot.forEach((docSnap) => {
+          const exists = list.some(item => item.id === docSnap.id);
+          if (!exists) {
+            list.push({ id: docSnap.id, ...docSnap.data() } as Message);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Could not retrieve documents from 'mensajes' collection:", err);
+    }
+
+    // 3. Attempt reading 'series' collection
+    try {
+      const seriesSnapshot = await getDocs(collection(db, "series"));
+      if (!seriesSnapshot.empty) {
+        const localSeries: Series[] = [];
+        seriesSnapshot.forEach((docSnap) => {
+          localSeries.push({ id: docSnap.id, ...docSnap.data() } as Series);
+        });
+        setSeriesList(localSeries);
+        localStorage.setItem("santibanez_series", JSON.stringify(localSeries));
+      }
+    } catch (err) {
+      console.warn("Could not retrieve custom 'series' collection:", err);
+    }
+
+    setSyncing(false);
+
+    if (list.length > 0) {
+      setMessages(list);
+      localStorage.setItem("santibanez_messages", JSON.stringify(list));
+      if (showAlerts) {
+        setSyncSuccess(true);
+        setTimeout(() => setSyncSuccess(false), 3000);
+      }
+    } else {
+      if (showAlerts) {
+        if (collectionsFetchedSuccessfully === 0) {
+          setSyncError("Error de conexión al sincronizar con la base de datos.");
+        } else {
+          setSyncError("La base de datos en la nube está vacía. Se conservan los mensajes preestablecidos.");
+        }
+        setTimeout(() => setSyncError(null), 7000);
+      }
+    }
+  };
+
+  // Manual trigger button calls the universal synchronized function with full feedback
+  const handleSyncFromFirestore = async () => {
+    await syncDataFromDatabase(true);
   };
 
   // 1.5 Seed mock messages helper
@@ -142,7 +212,7 @@ export default function App() {
     try {
       const seededList: Message[] = [...initialMessages];
       for (const msg of seededList) {
-        await setDoc(doc(db, "mensajes", msg.id), {
+        await setDoc(doc(db, activeCollection, msg.id), {
           id: msg.id,
           codigo: msg.codigo,
           titulo: msg.titulo,
@@ -153,10 +223,10 @@ export default function App() {
       }
       setMessages(seededList);
     } catch (error) {
-      console.error("Error seeding to Firestore:", error);
+      console.error(`Error seeding to Firestore (collection: ${activeCollection}):`, error);
       setSyncError("Error al cargar los mensajes de prueba.");
       try {
-        handleFirestoreError(error, OperationType.WRITE, "mensajes");
+        handleFirestoreError(error, OperationType.WRITE, activeCollection);
       } catch (wrappedError) {
         // Exception captured and logged
       }
@@ -171,9 +241,9 @@ export default function App() {
     setMessages((prev) => [newMsg, ...prev]);
     
     // Remote Firestore persist
-    const path = `mensajes/${newMsg.id}`;
+    const path = `${activeCollection}/${newMsg.id}`;
     try {
-      await setDoc(doc(db, "mensajes", newMsg.id), {
+      await setDoc(doc(db, activeCollection, newMsg.id), {
         id: newMsg.id,
         codigo: newMsg.codigo,
         titulo: newMsg.titulo,
@@ -429,24 +499,51 @@ export default function App() {
 
                     {/* Database status feedback banner */}
                     {(syncError || syncSuccess) && (
-                      <div className={`mb-6 p-4 rounded-2xl border text-xs font-mono flex items-center justify-between transition-all ${
+                      <div className={`mb-6 p-4 rounded-2xl border text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
                         syncError 
                           ? isOled 
-                            ? "bg-red-950/20 border-red-900/30 text-red-400" 
-                            : "bg-red-50 border-red-100 text-red-700"
+                            ? "bg-red-950/20 border-red-900/40 text-red-400" 
+                            : "bg-red-50 border-red-200 text-red-800"
                           : isOled 
-                            ? "bg-emerald-950/20 border-emerald-900/30 text-[#FDE047]" 
-                            : "bg-emerald-50 border-emerald-100 text-emerald-800"
+                            ? "bg-emerald-950/20 border-emerald-900/40 text-[#FDE047]" 
+                            : "bg-emerald-50 border-emerald-200 text-emerald-800"
                       }`}>
-                        <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 shrink-0" />
-                          <span>{syncError || "¡Sincronización finalizada con éxito! El catálogo ha sido actualizado con los mensajes de la nube."}</span>
+                        <div className="flex items-start sm:items-center gap-2.5">
+                          <Database className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" />
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <span>{syncError || "¡Sincronización finalizada con éxito! El catálogo ha sido actualizado con los mensajes de la nube."}</span>
+                            {syncError && syncError.includes("está vacía") && (
+                              <button
+                                onClick={async () => {
+                                  await handleSeedMessages();
+                                  setSyncError(null);
+                                  setSyncSuccess(true);
+                                  setTimeout(() => setSyncSuccess(false), 5 * 1000);
+                                }}
+                                disabled={seeding}
+                                className={`px-2.5 py-1 rounded-lg font-bold border active:scale-95 transition-all text-[11px] cursor-pointer inline-flex items-center gap-1.5 ${
+                                  isOled 
+                                    ? "bg-[#FDE047] border-[#FDE047] text-[#121212] hover:bg-opacity-90"
+                                    : "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700"
+                                }`}
+                              >
+                                {seeding ? (
+                                  <>
+                                    <div className="h-3 w-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    <span>Subiendo...</span>
+                                  </>
+                                ) : (
+                                  "Subir Sermones Iniciales"
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <button 
                           onClick={() => { setSyncError(null); setSyncSuccess(false); }}
-                          className="p-1 rounded-lg hover:bg-black/10 transition-colors"
+                          className="p-1 rounded-lg hover:bg-black/10 transition-colors self-end sm:self-auto"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </button>
                       </div>
                     )}
