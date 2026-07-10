@@ -2,25 +2,32 @@ import { Message, Series } from "../types";
 
 export const initialSeries: Series[] = [
   {
-    id: "gomez",
-    titulo: "Pastor Daniel Gómez",
-    descripcion: "Enseñanzas, devocionales y reflexiones doctrinales expuestos por el Pastor Daniel Gómez.",
+    id: "mensajes-ministros",
+    titulo: "Mensajes a los ministros",
+    descripcion: "Enseñanzas, exhortaciones y guías espirituales orientadas al liderazgo y servicio ministerial.",
     color: "from-amber-500 to-orange-600",
+    icon: "Users",
+  },
+  {
+    id: "mensajes-anio",
+    titulo: "Mensajes por año",
+    descripcion: "Compilación cronológica de sermones doctrinales organizados y expuestos año por año.",
+    color: "from-emerald-500 to-teal-600",
+    icon: "Calendar",
+  },
+  {
+    id: "extractos-mensajes",
+    titulo: "Extractos de mensajes",
+    descripcion: "Porciones selectas, perlas espirituales y citas breves ideales para la meditación diaria.",
+    color: "from-blue-500 to-indigo-600",
     icon: "BookOpen",
   },
   {
-    id: "elena",
-    titulo: "Misionera Elena Castro",
-    descripcion: "Estudios bíblicos profundos y reflexiones de vida cristiana guiados por la Misionera Elena Castro.",
-    color: "from-emerald-500 to-teal-600",
-    icon: "Users",
-  },
-  {
-    id: "benitez",
-    titulo: "Pastor Marcos Benítez",
-    descripcion: "Mensajes prácticos sobre la fe, la familia y el servicio comunitario del Pastor Marcos Benítez.",
-    color: "from-teal-600 to-emerald-700",
-    icon: "Users",
+    id: "estudios",
+    titulo: "Estudios",
+    descripcion: "Estudios bíblicos sistemáticos y análisis de las Sagradas Escrituras para profundizar la fe.",
+    color: "from-purple-500 to-pink-600",
+    icon: "Bookmark",
   },
 ];
 
@@ -30,7 +37,7 @@ export const initialMessages: Message[] = [
     codigo: "GOM-2026-01",
     titulo: "El Clamor de la Oración en Tiempos de Cambio",
     fecha: "2026-01-10",
-    serie_id: "gomez",
+    serie_id: "mensajes-anio",
     autor: "Pastor Daniel Gómez",
     contenido: `# El Clamor de la Oración en Tiempos de Cambio
 
@@ -56,7 +63,7 @@ Que este año 2026 sea una temporada donde nuestro altar de oración nunca perma
     codigo: "GOM-2026-02",
     titulo: "Edificando un Hogar sobre la Roca Abundante",
     fecha: "2026-02-05",
-    serie_id: "gomez",
+    serie_id: "estudios",
     autor: "Pastor Daniel Gómez",
     contenido: `# Edificando un Hogar sobre la Roca Abundante
 
@@ -78,7 +85,7 @@ Transmitir fe y civismo no se hace con discursos largos, sino con el ejemplo dia
     codigo: "GOM-2026-03",
     titulo: "Nuestra Identidad en el Servicio Mutuo de EL GRUPITO PEQUEÑO",
     fecha: "2026-03-14",
-    serie_id: "gomez",
+    serie_id: "extractos-mensajes",
     autor: "Pastor Daniel Gómez",
     contenido: `# Nuestra Identidad en el Servicio Mutuo
 
@@ -99,7 +106,7 @@ Recuerda que el que no vive para servir, no sirve para vivir. Busquemos esta sem
     codigo: "CAS-2026-01",
     titulo: "El Estudio de las Escrituras y la Sabiduría Diaria",
     fecha: "2026-04-02",
-    serie_id: "elena",
+    serie_id: "estudios",
     autor: "Misionera Elena Castro",
     contenido: `# El Estudio de las Escrituras y la Sabiduría Diaria
 
@@ -120,7 +127,7 @@ Proponeos leer un capítulo con detenimiento cada mañana. Anotad vuestro pasaje
     codigo: "GOM-2026-04",
     titulo: "La Esperanza en la Incertidumbre: Una Luz que No se Apaga",
     fecha: "2026-05-18",
-    serie_id: "gomez",
+    serie_id: "mensajes-ministros",
     autor: "Pastor Daniel Gómez",
     contenido: `# La Esperanza en la Incertidumbre: Una Luz que No se Apaga
 
@@ -143,7 +150,7 @@ Mantén tu mirada alta, porque tu redención está cerca. No estás solo en el c
     codigo: "BEN-2024-01",
     titulo: "La Paciencia en la Siembra y la Cosecha Espiritual",
     fecha: "2024-11-20",
-    serie_id: "benitez",
+    serie_id: "mensajes-anio",
     autor: "Pastor Marcos Benítez",
     contenido: `# La Paciencia en la Siembra y la Cosecha Espiritual
 
@@ -164,7 +171,7 @@ No te canses de hacer el bien, porque a su debido tiempo cosecharemos si no desm
     codigo: "GOM-2025-01",
     titulo: "El Diálogo Intergeneracional en la Familia Moderna",
     fecha: "2025-12-05",
-    serie_id: "gomez",
+    serie_id: "extractos-mensajes",
     autor: "Pastor Daniel Gómez",
     contenido: `# El Diálogo Intergeneracional en la Familia Moderna
 
@@ -185,7 +192,7 @@ No permitamos que el ruido del televisor silencie las benditas voces de la exper
     codigo: "GOM-2025-02",
     titulo: "El Valor de la Unidad Comunitaria ante los Retos",
     fecha: "2025-12-25",
-    serie_id: "gomez",
+    serie_id: "mensajes-ministros",
     autor: "Pastor Daniel Gómez",
     contenido: `# El Valor de la Unidad Comunitaria ante los Retos
 

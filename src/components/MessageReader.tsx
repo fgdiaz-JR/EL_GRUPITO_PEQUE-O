@@ -24,7 +24,8 @@ import {
   X,
   BookOpen,
   FileText,
-  User
+  User,
+  Search
 } from "lucide-react";
 
 interface MessageReaderProps {
@@ -62,6 +63,66 @@ export default function MessageReader({
     return localStorage.getItem(`studynotes_${message.id}`) || "";
   });
   const [noteSavedFeedback, setNoteSavedFeedback] = useState<boolean>(false);
+
+  // Inline content word/phrase search engine state
+  const [innerSearchQuery, setInnerSearchQuery] = useState<string>("");
+
+  // Calculate matching occurrences in the sermon content
+  const matchCount = React.useMemo(() => {
+    if (!innerSearchQuery.trim()) return 0;
+    try {
+      const escapedQuery = innerSearchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(escapedQuery, "gi");
+      const matches = message.contenido.match(regex);
+      return matches ? matches.length : 0;
+    } catch (e) {
+      return 0;
+    }
+  }, [innerSearchQuery, message.contenido]);
+
+  // Recursively highlights matching query search terms inside rendered elements
+  const highlightText = (node: React.ReactNode, query: string): React.ReactNode => {
+    if (!query || !query.trim()) return node;
+    
+    if (typeof node === "string") {
+      const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const parts = node.split(new RegExp(`(${escapedQuery})`, "gi"));
+      return (
+        <>
+          {parts.map((part, index) => {
+            const isMatch = part.toLowerCase() === query.toLowerCase();
+            return isMatch ? (
+              <mark 
+                key={index} 
+                className="bg-amber-200 text-zinc-950 px-0.5 rounded font-bold transition-all duration-200 dark:bg-amber-400 dark:text-black shadow-sm"
+              >
+                {part}
+              </mark>
+            ) : (
+              part
+            );
+          })}
+        </>
+      );
+    }
+    
+    if (React.isValidElement(node)) {
+      const element = node as React.ReactElement<any>;
+      const children = element.props.children;
+      if (children) {
+        return React.cloneElement(element, {
+          ...element.props,
+          children: React.Children.map(children, (child) => highlightText(child, query)),
+        });
+      }
+    }
+    
+    if (Array.isArray(node)) {
+      return node.map((child, index) => <React.Fragment key={index}>{highlightText(child, query)}</React.Fragment>);
+    }
+    
+    return node;
+  };
 
   // Parse markdown headers to populate Table of Contents
   const headings = React.useMemo(() => {
@@ -389,6 +450,60 @@ export default function MessageReader({
         
         {/* Core Sermon text sheet */}
         <div className={`transition-all duration-300 ${showStudyNotes ? "lg:col-span-8" : "lg:col-span-12"}`}>
+          
+          {/* Inner Message Search Bar */}
+          <div className={`mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border transition-all ${
+            isOled 
+              ? "bg-[#111114] border-zinc-800 text-zinc-300" 
+              : "bg-emerald-50/40 border-emerald-100 text-emerald-950 shadow-sm"
+          }`}>
+            <div className="flex items-center gap-2.5 flex-grow w-full">
+              <span className={`p-2.5 rounded-xl ${isOled ? "bg-zinc-900 text-amber-400" : "bg-emerald-100 text-emerald-800"}`}>
+                <Search className="h-4 w-4" />
+              </span>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Buscar palabras o frases dentro de este sermón..."
+                  value={innerSearchQuery}
+                  onChange={(e) => setInnerSearchQuery(e.target.value)}
+                  className={`w-full py-2 pl-3.5 pr-10 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-all ${
+                    isOled 
+                      ? "bg-[#0A0A0C] border-zinc-850 text-white placeholder-zinc-500 focus:ring-amber-500 focus:border-amber-500" 
+                      : "bg-white border-zinc-250 text-zinc-850 placeholder-zinc-400 focus:ring-emerald-600 focus:border-emerald-600"
+                  }`}
+                />
+                {innerSearchQuery && (
+                  <button
+                    onClick={() => setInnerSearchQuery("")}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {innerSearchQuery.trim() && (
+              <div className="flex items-center gap-3 self-end sm:self-auto shrink-0 font-mono text-xs">
+                <span className={`px-3 py-1 rounded-full font-bold ${
+                  matchCount > 0 
+                    ? isOled 
+                      ? "bg-amber-950/40 text-amber-300 border border-amber-900/45" 
+                      : "bg-emerald-100 text-emerald-800"
+                    : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                }`}>
+                  {matchCount > 0 ? `${matchCount} coincidencias` : "Sin resultados"}
+                </span>
+                {matchCount > 0 && (
+                  <span className="text-[10px] text-zinc-400 italic hidden md:inline">
+                    (Resaltado en amarillo abajo)
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           <article className={`rounded-2xl border p-6 sm:p-10 shadow-2xl transition-colors duration-300 print:border-none print:bg-white print:p-0 ${
             isOled 
               ? "border-[#27272A] bg-[#0A0A0C] shadow-[#000000]/60 text-zinc-300" 
@@ -442,23 +557,58 @@ export default function MessageReader({
               className={`markdown-body transition-all duration-150 py-2 leading-relaxed selection:bg-emerald-500/20 ${getFamilyClass()}`}
               style={{ fontSize: `${fontSize}px`, lineHeight: "1.9" }}
             >
-              {/* Process content to attach target ids dynamically to matching H2/H3 anchors */}
+              {/* Process content to attach target ids dynamically to matching H2/H3 anchors and highlight search query */}
               <Markdown
                 components={{
                   h2: ({ node, children, ...props }) => {
                     const text = String(children);
                     const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                    return <h2 id={id} className={`mt-8 mb-4 font-serif text-2xl font-bold tracking-tight border-b pb-1.5 ${
-                      isOled ? "text-white border-zinc-800" : "text-emerald-950 border-zinc-100"
-                    }`} {...props}>{children}</h2>;
+                    return (
+                      <h2 id={id} className={`mt-8 mb-4 font-serif text-2xl font-bold tracking-tight border-b pb-1.5 ${
+                        isOled ? "text-white border-zinc-800" : "text-emerald-950 border-zinc-100"
+                      }`} {...props}>
+                        {highlightText(children, innerSearchQuery)}
+                      </h2>
+                    );
                   },
                   h3: ({ node, children, ...props }) => {
                     const text = String(children);
                     const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                    return <h3 id={id} className={`mt-6 mb-3 font-serif text-lg font-semibold ${
-                      isOled ? "text-zinc-100" : "text-emerald-900"
-                    }`} {...props}>{children}</h3>;
-                  }
+                    return (
+                      <h3 id={id} className={`mt-6 mb-3 font-serif text-lg font-semibold ${
+                        isOled ? "text-zinc-100" : "text-emerald-900"
+                      }`} {...props}>
+                        {highlightText(children, innerSearchQuery)}
+                      </h3>
+                    );
+                  },
+                  p: ({ children }) => (
+                    <p className="mb-4 text-justify">
+                      {highlightText(children, innerSearchQuery)}
+                    </p>
+                  ),
+                  li: ({ children }) => (
+                    <li className="mb-1.5 list-disc ml-5 text-left">
+                      {highlightText(children, innerSearchQuery)}
+                    </li>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote className={`border-l-4 pl-4 italic my-4 rounded-r-lg py-1 px-2 ${
+                      isOled ? "border-zinc-700 text-zinc-450 bg-[#121215]/50" : "border-emerald-600 text-zinc-650 bg-emerald-50/30"
+                    }`}>
+                      {highlightText(children, innerSearchQuery)}
+                    </blockquote>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-bold">
+                      {highlightText(children, innerSearchQuery)}
+                    </strong>
+                  ),
+                  em: ({ children }) => (
+                    <em className="italic">
+                      {highlightText(children, innerSearchQuery)}
+                    </em>
+                  )
                 }}
               >
                 {message.contenido}

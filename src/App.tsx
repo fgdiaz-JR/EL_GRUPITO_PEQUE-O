@@ -61,6 +61,9 @@ export default function App() {
           m.serie_id === "estudios-tematicos" || 
           m.serie_id === "vida-comunitaria" || 
           m.serie_id === "familia-hogar" ||
+          m.serie_id === "gomez" ||
+          m.serie_id === "elena" ||
+          m.serie_id === "benitez" ||
           m.serie_id.includes("santibanez") ||
           m.serie_id.includes("2026") ||
           m.serie_id.includes("2025") ||
@@ -88,6 +91,9 @@ export default function App() {
           s.id === "estudios-tematicos" || 
           s.id === "vida-comunitaria" || 
           s.id === "familia-hogar" ||
+          s.id === "gomez" ||
+          s.id === "elena" ||
+          s.id === "benitez" ||
           s.id.includes("santibanez") ||
           s.id.includes("2026") ||
           s.id.includes("2025") ||
