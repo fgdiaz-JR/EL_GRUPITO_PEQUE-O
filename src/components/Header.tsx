@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Search, Users, Database, Sparkles, Heart, Sun, Moon, RefreshCw, FileText } from "lucide-react";
+import { BookOpen, Search, Users, Database, Sparkles, Heart, Sun, Moon, RefreshCw } from "lucide-react";
 import pozoLogo from "../assets/images/pozo_clean_logo_1780936653610.png";
 
 interface HeaderProps {
@@ -136,22 +136,7 @@ export default function Header({
             </button>
           )}
 
-          {/* AI Blueprint Printable Document (PDF spec) */}
-          <a
-            href="/Especificacion_Tecnica.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold tracking-tight transition-all duration-300 active:scale-95 cursor-pointer decoration-transparent ${
-              isOled 
-                ? "bg-[#1E1E22] border-[#27272A] text-zinc-300 hover:text-[#FDE047] hover:border-[#FDE047]/30"
-                : "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-750"
-            }`}
-            title="Ver e imprimir la especificación técnica en PDF para IA"
-            id="btn-header-spec-pdf"
-          >
-            <FileText className="h-4 w-4" />
-            <span className="hidden leading-none sm:inline">Plano IA (PDF)</span>
-          </a>
+
 
           {/* Theme Toggler Switcher Button */}
           <button
