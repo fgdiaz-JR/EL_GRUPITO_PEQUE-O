@@ -25,7 +25,9 @@ import {
   BookOpen,
   FileText,
   User,
-  Search
+  Search,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 
 interface MessageReaderProps {
@@ -66,6 +68,7 @@ export default function MessageReader({
 
   // Inline content word/phrase search engine state
   const [innerSearchQuery, setInnerSearchQuery] = useState<string>("");
+  const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
 
   // Calculate matching occurrences in the sermon content
   const matchCount = React.useMemo(() => {
@@ -79,6 +82,78 @@ export default function MessageReader({
       return 0;
     }
   }, [innerSearchQuery, message.contenido]);
+
+  // Handle scrolling to matches
+  const scrollToMatch = (index: number) => {
+    const elements = document.querySelectorAll(".search-match-highlight");
+    if (elements.length === 0) return;
+
+    let targetIndex = index;
+    if (targetIndex < 0) {
+      targetIndex = elements.length - 1;
+    } else if (targetIndex >= elements.length) {
+      targetIndex = 0;
+    }
+
+    setCurrentMatchIndex(targetIndex);
+
+    // Reset styles on all matches
+    elements.forEach((el) => {
+      el.classList.remove(
+        "bg-orange-500", "text-white", "ring-4", "ring-orange-300", "dark:bg-amber-500", "dark:text-black", "scale-110", "z-10"
+      );
+      // restore default highlight classes
+      el.classList.add(
+        "bg-amber-200", "text-zinc-950", "dark:bg-amber-400", "dark:text-black"
+      );
+    });
+
+    // Apply active styles to the selected match
+    const activeEl = elements[targetIndex] as HTMLElement;
+    if (activeEl) {
+      activeEl.classList.remove(
+        "bg-amber-200", "text-zinc-950", "dark:bg-amber-400", "dark:text-black"
+      );
+      activeEl.classList.add(
+        "bg-orange-500", "text-white", "ring-4", "ring-orange-300", "dark:bg-amber-500", "dark:text-black", "scale-110", "z-10"
+      );
+      
+      // Scroll into view smoothly with a comfortable offset
+      activeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  const handleNextMatch = () => {
+    scrollToMatch(currentMatchIndex + 1);
+  };
+
+  const handlePrevMatch = () => {
+    scrollToMatch(currentMatchIndex - 1);
+  };
+
+  // Reset current match state on query change
+  useEffect(() => {
+    setCurrentMatchIndex(0);
+    // If empty query, remove any active highlight styling leftover classes
+    if (!innerSearchQuery.trim()) {
+      const elements = document.querySelectorAll(".search-match-highlight");
+      elements.forEach((el) => {
+        el.classList.remove(
+          "bg-orange-500", "text-white", "ring-4", "ring-orange-300", "dark:bg-amber-500", "dark:text-black", "scale-110", "z-10"
+        );
+      });
+    } else {
+      // Auto-scroll to the first match on next tick once elements are rendered
+      const triggerScroll = () => {
+        scrollToMatch(0);
+      };
+      if (document.querySelectorAll(".search-match-highlight").length > 0) {
+        triggerScroll();
+      } else {
+        setTimeout(triggerScroll, 100);
+      }
+    }
+  }, [innerSearchQuery]);
 
   // Recursively highlights matching query search terms inside rendered elements
   const highlightText = (node: React.ReactNode, query: string): React.ReactNode => {
@@ -94,7 +169,7 @@ export default function MessageReader({
             return isMatch ? (
               <mark 
                 key={index} 
-                className="bg-amber-200 text-zinc-950 px-0.5 rounded font-bold transition-all duration-200 dark:bg-amber-400 dark:text-black shadow-sm"
+                className="search-match-highlight bg-amber-200 text-zinc-950 px-0.5 rounded font-bold transition-all duration-200 dark:bg-amber-400 dark:text-black shadow-sm"
               >
                 {part}
               </mark>
@@ -452,7 +527,7 @@ export default function MessageReader({
         <div className={`transition-all duration-300 ${showStudyNotes ? "lg:col-span-8" : "lg:col-span-12"}`}>
           
           {/* Inner Message Search Bar */}
-          <div className={`mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border transition-all ${
+          <div className={`mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 rounded-2xl border transition-all ${
             isOled 
               ? "bg-[#111114] border-zinc-800 text-zinc-300" 
               : "bg-emerald-50/40 border-emerald-100 text-emerald-950 shadow-sm"
@@ -467,6 +542,12 @@ export default function MessageReader({
                   placeholder="Buscar palabras o frases dentro de este sermón..."
                   value={innerSearchQuery}
                   onChange={(e) => setInnerSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleNextMatch();
+                    }
+                  }}
                   className={`w-full py-2 pl-3.5 pr-10 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-all ${
                     isOled 
                       ? "bg-[#0A0A0C] border-zinc-850 text-white placeholder-zinc-500 focus:ring-amber-500 focus:border-amber-500" 
@@ -485,20 +566,48 @@ export default function MessageReader({
             </div>
             
             {innerSearchQuery.trim() && (
-              <div className="flex items-center gap-3 self-end sm:self-auto shrink-0 font-mono text-xs">
-                <span className={`px-3 py-1 rounded-full font-bold ${
-                  matchCount > 0 
-                    ? isOled 
-                      ? "bg-amber-950/40 text-amber-300 border border-amber-900/45" 
-                      : "bg-emerald-100 text-emerald-800"
-                    : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
-                }`}>
-                  {matchCount > 0 ? `${matchCount} coincidencias` : "Sin resultados"}
-                </span>
-                {matchCount > 0 && (
-                  <span className="text-[10px] text-zinc-400 italic hidden md:inline">
-                    (Resaltado en amarillo abajo)
+              <div className="flex items-center gap-3 justify-between md:justify-end w-full md:w-auto shrink-0 font-mono text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-3 py-1 rounded-full font-bold ${
+                    matchCount > 0 
+                      ? isOled 
+                        ? "bg-amber-950/40 text-amber-300 border border-amber-900/45" 
+                        : "bg-emerald-100 text-emerald-800"
+                      : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                  }`}>
+                    {matchCount > 0 
+                      ? `${currentMatchIndex + 1} de ${matchCount} coincidencias` 
+                      : "Sin resultados"}
                   </span>
+                </div>
+
+                {matchCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handlePrevMatch}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+                        isOled 
+                          ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
+                          : "bg-white border-zinc-200 text-zinc-750 hover:bg-zinc-50 hover:text-zinc-950 shadow-sm"
+                      }`}
+                      title="Coincidencia anterior"
+                    >
+                      <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                      <span>Anterior</span>
+                    </button>
+                    <button
+                      onClick={handleNextMatch}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+                        isOled 
+                          ? "bg-zinc-900 border-zinc-800 text-[#FDE047] hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
+                          : "bg-emerald-50 border-emerald-250 text-emerald-700 hover:bg-emerald-100/80 hover:text-emerald-800 shadow-xs"
+                      }`}
+                      title="Siguiente coincidencia (Enter)"
+                    >
+                      <span>Siguiente</span>
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                    </button>
+                  </div>
                 )}
               </div>
             )}
