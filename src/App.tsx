@@ -16,7 +16,8 @@ import {
   FolderOpen,
   Database,
   RefreshCw,
-  Check
+  Check,
+  User
 } from "lucide-react";
 
 import { Message, Series, Bookmark } from "./types";
@@ -54,13 +55,16 @@ export default function App() {
     if (cachedMessages) {
       try {
         const parsed = JSON.parse(cachedMessages);
-        // Reset cache if it references the old thematic series IDs or Santibáñez
+        // Reset cache if it references the old thematic series IDs or Santibáñez or combined series IDs
         if (parsed.some((m: any) => 
           m.serie_id === "reflexiones-fe" || 
           m.serie_id === "estudios-tematicos" || 
           m.serie_id === "vida-comunitaria" || 
           m.serie_id === "familia-hogar" ||
           m.serie_id.includes("santibanez") ||
+          m.serie_id.includes("2026") ||
+          m.serie_id.includes("2025") ||
+          m.serie_id.includes("2024") ||
           (m.autor && m.autor.includes("Santibáñez"))
         )) {
           localStorage.setItem("santibanez_messages", JSON.stringify(initialMessages));
@@ -78,13 +82,16 @@ export default function App() {
     if (cachedSeries) {
       try {
         const parsed = JSON.parse(cachedSeries);
-        // Reset cache if it references the old thematic series IDs or Santibáñez
+        // Reset cache if it references the old thematic series IDs or Santibáñez or combined series IDs
         if (parsed.some((s: any) => 
           s.id === "reflexiones-fe" || 
           s.id === "estudios-tematicos" || 
           s.id === "vida-comunitaria" || 
           s.id === "familia-hogar" ||
           s.id.includes("santibanez") ||
+          s.id.includes("2026") ||
+          s.id.includes("2025") ||
+          s.id.includes("2024") ||
           s.titulo.includes("Santibáñez")
         )) {
           localStorage.setItem("santibanez_series", JSON.stringify(initialSeries));
@@ -102,6 +109,7 @@ export default function App() {
   
   // Selected filtered series (for the "Series" tab view)
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
+  const [selectedSeriesYear, setSelectedSeriesYear] = useState<string | null>(null);
   
   // Selected message for reader viewport
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
@@ -337,9 +345,13 @@ export default function App() {
   }, [messages]);
 
   const filteredSeriesMessages = useMemo(() => {
-    if (!selectedSeriesId) return [];
-    return sortedRecentMessages.filter((m) => m.serie_id === selectedSeriesId);
-  }, [selectedSeriesId, sortedRecentMessages]);
+    return sortedRecentMessages.filter((m) => {
+      const matchPastor = !selectedSeriesId || m.serie_id === selectedSeriesId;
+      const yr = m.fecha ? m.fecha.substring(0, 4) : "";
+      const matchYear = !selectedSeriesYear || yr === selectedSeriesYear;
+      return matchPastor && matchYear;
+    });
+  }, [selectedSeriesId, selectedSeriesYear, sortedRecentMessages]);
 
   const searchedMessages = useMemo(() => {
     if (!searchQuery.trim() && searchSeriesFilter === "all" && searchYearFilter === "all" && searchAuthorFilter === "all") {
@@ -688,84 +700,157 @@ export default function App() {
                     <h2 className={`font-serif text-3xl font-bold tracking-tight ${
                       isOled ? "text-white" : "text-emerald-950"
                     }`}>
-                      Series por Pastor y Año
+                      Series de Pastores y Fechas
                     </h2>
                     <p className={`mt-2 sm:text-sm ${
                       isOled ? "text-zinc-400" : "text-zinc-650"
                     }`}>
-                      Filtre las enseñanzas de la comunidad seleccionando un Pastor y un Año.
+                      Explore y filtre las enseñanzas de la comunidad seleccionando un Pastor y un Año de manera independiente.
                     </p>
                   </div>
 
-                  {/* Series cards selection bento grid */}
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-                    {seriesList.map((serie) => {
-                      const isSelected = selectedSeriesId === serie.id;
-                      const msgCount = messages.filter((m) => m.serie_id === serie.id).length;
+                  <div className="space-y-8 mb-10">
+                    {/* Part 1: Series de Pastores */}
+                    <div>
+                      <h3 className={`text-xs font-mono uppercase tracking-wider mb-4 font-bold flex items-center gap-1.5 ${
+                        isOled ? "text-zinc-400" : "text-zinc-500"
+                      }`}>
+                        <User className="h-3.5 w-3.5 text-emerald-500" />
+                        1. Seleccione un Pastor / Expositor:
+                      </h3>
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                        {seriesList.map((serie) => {
+                          const isSelected = selectedSeriesId === serie.id;
+                          const msgCount = messages.filter((m) => m.serie_id === serie.id).length;
 
-                      return (
-                        <div
-                          key={serie.id}
-                          onClick={() => setSelectedSeriesId(isSelected ? null : serie.id)}
-                          className={`relative rounded-2xl p-6 border cursor-pointer transition-all ${
-                            isSelected 
-                              ? isOled 
-                                ? "bg-gradient-to-br from-[#121215] to-[#1C1C20] border-[#FDE047] text-white shadow-xl" 
-                                : "bg-gradient-to-br from-emerald-650 to-teal-700 border-emerald-600 text-white shadow-lg"
-                              : isOled 
-                                ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700 hover:bg-[#121214]" 
-                                : "bg-white border-zinc-200 text-zinc-800 hover:border-emerald-300 hover:bg-emerald-50/20"
+                          return (
+                            <div
+                              key={serie.id}
+                              onClick={() => setSelectedSeriesId(isSelected ? null : serie.id)}
+                              className={`relative rounded-2xl p-6 border cursor-pointer transition-all ${
+                                isSelected 
+                                  ? isOled 
+                                    ? "bg-gradient-to-br from-[#121215] to-[#1C1C20] border-[#FDE047] text-white shadow-xl" 
+                                    : "bg-gradient-to-br from-emerald-650 to-teal-700 border-emerald-600 text-white shadow-lg"
+                                  : isOled 
+                                    ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700 hover:bg-[#121214]" 
+                                    : "bg-white border-zinc-200 text-zinc-800 hover:border-emerald-300 hover:bg-emerald-50/20"
+                              }`}
+                            >
+                              <div className={`p-3 rounded-xl w-fit mb-4 ${
+                                isSelected 
+                                  ? "bg-black/30 text-[#FDE047]" 
+                                  : isOled 
+                                    ? "bg-black/20 text-[#34D399]" 
+                                    : "bg-emerald-50 text-emerald-600"
+                              }`}>
+                                <User className="h-5 w-5" />
+                              </div>
+
+                              <h3 className="font-serif text-lg font-bold leading-snug">
+                                {serie.titulo}
+                              </h3>
+                              
+                              <p className={`text-xs mt-2 leading-relaxed ${
+                                isSelected 
+                                  ? isOled ? "text-zinc-300" : "text-emerald-100"
+                                  : isOled ? "text-zinc-500" : "text-zinc-500"
+                              }`}>
+                                {serie.descripcion}
+                              </p>
+
+                              <div className={`mt-6 flex items-center justify-between border-t pt-3 text-[10px] font-mono ${
+                                isSelected
+                                  ? isOled ? "border-zinc-800/80" : "border-emerald-500/30"
+                                  : isOled ? "border-zinc-800/80" : "border-zinc-100"
+                              }`}>
+                                <span className={isSelected ? isOled ? "text-zinc-400" : "text-emerald-200" : "text-zinc-400"}>
+                                  Sermones Totales:
+                                </span>
+                                <span className={`font-bold px-2.5 py-0.5 rounded-full ${
+                                  isSelected 
+                                    ? isOled 
+                                      ? "bg-[#27272A] text-[#FDE047] border border-[#FDE047]/20" 
+                                      : "bg-emerald-800 text-white border border-emerald-500/20"
+                                    : isOled
+                                      ? "bg-black/20 text-zinc-300"
+                                      : "bg-zinc-50 text-zinc-600 border border-zinc-100"
+                                }`}>
+                                  {msgCount}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Part 2: Fechas y Años */}
+                    <div>
+                      <h3 className={`text-xs font-mono uppercase tracking-wider mb-4 font-bold flex items-center gap-1.5 ${
+                        isOled ? "text-zinc-400" : "text-zinc-500"
+                      }`}>
+                        <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                        2. Seleccione un Año / Fecha:
+                      </h3>
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          onClick={() => setSelectedSeriesYear(null)}
+                          className={`px-5 py-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                            selectedSeriesYear === null
+                              ? isOled
+                                ? "bg-[#FDE047] border-[#FDE047] text-[#121212]"
+                                : "bg-emerald-600 border-emerald-600 text-white shadow-md"
+                              : isOled
+                                ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700"
+                                : "bg-white border-zinc-200 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50/10"
                           }`}
                         >
-                          <div className={`p-3 rounded-xl w-fit mb-4 ${
-                            isSelected 
-                              ? "bg-black/30 text-[#FDE047]" 
-                              : isOled 
-                                ? "bg-black/20 text-[#34D399]" 
-                                : "bg-emerald-50 text-emerald-600"
-                          }`}>
-                            <FolderOpen className="h-5 w-5" />
-                          </div>
+                          Todos los Años
+                        </button>
+                        {uniqueYears.map((year) => {
+                          const isSelected = selectedSeriesYear === year;
+                          const count = messages.filter((m) => {
+                            const matchPastor = !selectedSeriesId || m.serie_id === selectedSeriesId;
+                            const yr = m.fecha ? m.fecha.substring(0, 4) : "";
+                            return matchPastor && yr === year;
+                          }).length;
 
-                          <h3 className="font-serif text-lg font-bold leading-snug">
-                            {serie.titulo}
-                          </h3>
-                          
-                          <p className={`text-xs mt-2 leading-relaxed ${
-                            isSelected 
-                              ? isOled ? "text-zinc-300" : "text-emerald-100"
-                              : isOled ? "text-zinc-500" : "text-zinc-500"
-                          }`}>
-                            {serie.descripcion}
-                          </p>
-
-                          <div className={`mt-6 flex items-center justify-between border-t pt-3 text-[10px] font-mono ${
-                            isSelected
-                              ? isOled ? "border-zinc-800/80" : "border-emerald-500/30"
-                              : isOled ? "border-zinc-800/80" : "border-zinc-100"
-                          }`}>
-                            <span className={isSelected ? isOled ? "text-zinc-400" : "text-emerald-200" : "text-zinc-400"}>
-                              Total:
-                            </span>
-                            <span className={`font-bold px-2.5 py-0.5 rounded-full ${
-                              isSelected 
-                                ? isOled 
-                                  ? "bg-[#27272A] text-[#FDE047] border border-[#FDE047]/20" 
-                                  : "bg-emerald-800 text-white border border-emerald-500/20"
-                                : isOled
-                                  ? "bg-black/20 text-zinc-300"
-                                  : "bg-zinc-50 text-zinc-600 border border-zinc-100"
-                            }`}>
-                              {msgCount} {msgCount === 1 ? "mensaje" : "mensajes"}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          return (
+                            <button
+                              key={year}
+                              onClick={() => setSelectedSeriesYear(isSelected ? null : year)}
+                              className={`px-5 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                                isSelected
+                                  ? isOled
+                                    ? "bg-[#FDE047] border-[#FDE047] text-[#121212]"
+                                    : "bg-emerald-600 border-emerald-600 text-white shadow-md"
+                                  : isOled
+                                    ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700"
+                                    : "bg-white border-zinc-200 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50/10"
+                              }`}
+                            >
+                              <span>{year}</span>
+                              <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                                isSelected
+                                  ? isOled
+                                    ? "bg-black/20 text-[#121212]"
+                                    : "bg-emerald-850 text-white"
+                                  : isOled
+                                    ? "bg-zinc-800 text-zinc-400"
+                                    : "bg-zinc-100 text-zinc-500"
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Series selected filtered results */}
-                  {selectedSeriesId ? (
+                  {(selectedSeriesId || selectedSeriesYear) ? (
                     <div>
                       <div className={`mb-6 flex items-center justify-between border-b pb-3 ${
                         isOled ? "border-[#27272A]" : "border-zinc-100"
@@ -774,15 +859,19 @@ export default function App() {
                           isOled ? "text-white" : "text-emerald-950"
                         }`}>
                           <Layers className={`h-5 w-5 ${isOled ? "text-[#FDE047]" : "text-emerald-600"}`} />
-                          Listado de Serie: {seriesList.find((s) => s.id === selectedSeriesId)?.titulo}
+                          Sermones de: {selectedSeriesId ? seriesList.find((s) => s.id === selectedSeriesId)?.titulo : "Todos los Pastores"} 
+                          {selectedSeriesYear ? ` (${selectedSeriesYear})` : ""}
                         </h3>
                         <button
-                          onClick={() => setSelectedSeriesId(null)}
+                          onClick={() => {
+                            setSelectedSeriesId(null);
+                            setSelectedSeriesYear(null);
+                          }}
                           className={`text-xs font-semibold cursor-pointer ${
                             isOled ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-emerald-700"
                           }`}
                         >
-                          Ver todas las series
+                          Limpiar Filtros
                         </button>
                       </div>
 
@@ -809,15 +898,38 @@ export default function App() {
                             ? "border-[#27272A] bg-[#0A0A0C]/50 text-zinc-500" 
                             : "border-zinc-200 bg-zinc-50 text-zinc-500"
                         }`}>
-                          No hay sermones cargados bajo este Pastor y Año actualmente.
+                          No hay sermones cargados bajo esta selección actualmente.
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className={`rounded-2xl p-10 text-center border ${
-                      isOled ? "bg-[#0A0A0C] border-[#27272A] text-zinc-500" : "bg-zinc-50 border-zinc-100 text-zinc-500"
-                    }`}>
-                      <p className="text-sm text-zinc-400">Selecciona una tarjeta superior para desplegar los sermones vinculados a ese Pastor y Año.</p>
+                    <div>
+                      <div className={`mb-6 flex items-center justify-between border-b pb-3 ${
+                        isOled ? "border-[#27272A]" : "border-zinc-100"
+                      }`}>
+                        <h3 className={`font-serif text-xl font-bold flex items-center gap-2 ${
+                          isOled ? "text-white" : "text-emerald-950"
+                        }`}>
+                          <Layers className={`h-5 w-5 ${isOled ? "text-[#FDE047]" : "text-emerald-600"}`} />
+                          Todos los Sermones Registrados ({sortedRecentMessages.length})
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {sortedRecentMessages.map((msg) => (
+                          <MessageCard 
+                            key={msg.id}
+                            message={msg}
+                            series={seriesList.find((s) => s.id === msg.serie_id)}
+                            onClick={() => setSelectedMessageId(msg.id)}
+                            isBookmarked={bookmarks.includes(msg.id)}
+                            onToggleBookmark={(e) => {
+                              e.stopPropagation();
+                              handleToggleBookmark(msg.id);
+                            }}
+                            theme={theme}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
