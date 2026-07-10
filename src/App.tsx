@@ -17,7 +17,8 @@ import {
   Database,
   RefreshCw,
   Check,
-  User
+  User,
+  ChevronDown
 } from "lucide-react";
 
 import { Message, Series, Bookmark } from "./types";
@@ -799,58 +800,37 @@ export default function App() {
                         <Calendar className="h-3.5 w-3.5 text-emerald-500" />
                         2. Seleccione un Año / Fecha:
                       </h3>
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => setSelectedSeriesYear(null)}
-                          className={`px-5 py-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                            selectedSeriesYear === null
-                              ? isOled
-                                ? "bg-[#FDE047] border-[#FDE047] text-[#121212]"
-                                : "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                              : isOled
-                                ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700"
-                                : "bg-white border-zinc-200 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50/10"
+                      <div className="relative max-w-xs">
+                        <select
+                          value={selectedSeriesYear || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSelectedSeriesYear(val === "" ? null : val);
+                          }}
+                          className={`w-full appearance-none pl-4 pr-10 py-3.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 ${
+                            isOled
+                              ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-750 focus:ring-[#FDE047]/30 focus:border-[#FDE047]"
+                              : "bg-white border-zinc-200 text-zinc-700 hover:border-emerald-300 focus:ring-emerald-600/20 focus:border-emerald-600"
                           }`}
                         >
-                          Todos los Años
-                        </button>
-                        {uniqueYears.map((year) => {
-                          const isSelected = selectedSeriesYear === year;
-                          const count = messages.filter((m) => {
-                            const matchPastor = !selectedSeriesId || m.serie_id === selectedSeriesId;
-                            const yr = m.fecha ? m.fecha.substring(0, 4) : "";
-                            return matchPastor && yr === year;
-                          }).length;
+                          <option value="">Todos los Años</option>
+                          {uniqueYears.map((year) => {
+                            const count = messages.filter((m) => {
+                              const matchPastor = !selectedSeriesId || m.serie_id === selectedSeriesId;
+                              const yr = m.fecha ? m.fecha.substring(0, 4) : "";
+                              return matchPastor && yr === year;
+                            }).length;
 
-                          return (
-                            <button
-                              key={year}
-                              onClick={() => setSelectedSeriesYear(isSelected ? null : year)}
-                              className={`px-5 py-3 rounded-xl border text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
-                                isSelected
-                                  ? isOled
-                                    ? "bg-[#FDE047] border-[#FDE047] text-[#121212]"
-                                    : "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                                  : isOled
-                                    ? "bg-[#0A0A0C] border-[#27272A] text-zinc-300 hover:border-zinc-700"
-                                    : "bg-white border-zinc-200 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50/10"
-                              }`}
-                            >
-                              <span>{year}</span>
-                              <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
-                                isSelected
-                                  ? isOled
-                                    ? "bg-black/20 text-[#121212]"
-                                    : "bg-emerald-850 text-white"
-                                  : isOled
-                                    ? "bg-zinc-800 text-zinc-400"
-                                    : "bg-zinc-100 text-zinc-500"
-                              }`}>
-                                {count}
-                              </span>
-                            </button>
-                          );
-                        })}
+                            return (
+                              <option key={year} value={year} className={isOled ? "bg-[#0A0A0C] text-white" : "bg-white text-zinc-800"}>
+                                {year} ({count} {count === 1 ? "sermón" : "sermones"})
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-zinc-400">
+                          <ChevronDown className="h-4 w-4" />
+                        </div>
                       </div>
                     </div>
                   </div>
