@@ -2,43 +2,43 @@ import { Message, Series } from "../types";
 
 export const initialSeries: Series[] = [
   {
-    id: "estudios-tematicos",
-    titulo: "Estudios Temáticos",
-    descripcion: "Enfoques bíblicos y conceptuales sobre el crecimiento y la vida cristiana.",
-    color: "from-blue-500 to-indigo-600",
+    id: "gomez-2026",
+    titulo: "Pastor Daniel Gómez - 2026",
+    descripcion: "Sermones y reflexiones inspiradoras del Pastor Daniel Gómez durante el año 2026.",
+    color: "from-amber-500 to-orange-600",
     icon: "BookOpen",
   },
   {
-    id: "vida-comunitaria",
-    titulo: "Vida en Comunidad",
-    descripcion: "Mensajes sobre la convivencia, el servicio mutuo y la unidad en EL GRUPITO PEQUEÑO.",
+    id: "gomez-2025",
+    titulo: "Pastor Daniel Gómez - 2025",
+    descripcion: "Mensajes doctrinales expuestos por el Pastor Daniel Gómez en el año 2025.",
+    color: "from-yellow-600 to-amber-700",
+    icon: "BookOpen",
+  },
+  {
+    id: "elena-2026",
+    titulo: "Misionera Elena Castro - 2026",
+    descripcion: "Estudios bíblicos y devocionales guiados por la Misionera Elena Castro en 2026.",
     color: "from-emerald-500 to-teal-600",
     icon: "Users",
   },
   {
-    id: "familia-hogar",
-    titulo: "Familia y Valores",
-    descripcion: "Enseñanzas para el hogar, la crianza con sabiduría y las relaciones interpersonales.",
-    color: "from-amber-500 to-orange-600",
-    icon: "Home",
-  },
-  {
-    id: "reflexiones-fe",
-    titulo: "Puntales de la Fe",
-    descripcion: "Sermones inspiradores para fortalecer la confianza y la esperanza en tiempos difíciles.",
-    color: "from-rose-500 to-pink-600",
-    icon: "Heart",
+    id: "benitez-2024",
+    titulo: "Pastor Marcos Benítez - 2024",
+    descripcion: "Enseñanzas prácticas y sermones del Pastor Marcos Benítez durante el año 2024.",
+    color: "from-teal-600 to-emerald-700",
+    icon: "Users",
   },
 ];
 
 export const initialMessages: Message[] = [
   {
     id: "1",
-    codigo: "SANT-2026-01",
+    codigo: "GOM-2026-01",
     titulo: "El Clamor de la Oración en Tiempos de Cambio",
     fecha: "2026-01-10",
-    serie_id: "reflexiones-fe",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2026",
+    autor: "Pastor Daniel Gómez",
     contenido: `# El Clamor de la Oración en Tiempos de Cambio
 
 La verdadera fuerza de una comunidad reside en su capacidad para detenerse y unirse en un solo clamor. La **oración** no es el último recurso ante la dificultad, sino el fundamento de cada paso que damos.
@@ -60,11 +60,11 @@ Que este año 2026 sea una temporada donde nuestro altar de oración nunca perma
   },
   {
     id: "2",
-    codigo: "SANT-2026-02",
+    codigo: "GOM-2026-02",
     titulo: "Edificando un Hogar sobre la Roca Abundante",
     fecha: "2026-02-05",
-    serie_id: "familia-hogar",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2026",
+    autor: "Pastor Daniel Gómez",
     contenido: `# Edificando un Hogar sobre la Roca Abundante
 
 La **familia** es la primera escuela del alma. Los cimientos de un hogar no se miden por el cemento o sus ladrillos, sino por la fortaleza de los valores que dentro de él se transmiten día tras día.
@@ -82,11 +82,11 @@ Transmitir fe y civismo no se hace con discursos largos, sino con el ejemplo dia
   },
   {
     id: "3",
-    codigo: "SANT-2026-03",
+    codigo: "GOM-2026-03",
     titulo: "Nuestra Identidad en el Servicio Mutuo de EL GRUPITO PEQUEÑO",
     fecha: "2026-03-14",
-    serie_id: "vida-comunitaria",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2026",
+    autor: "Pastor Daniel Gómez",
     contenido: `# Nuestra Identidad en el Servicio Mutuo
 
 Nuestra comunidad en **EL GRUPITO PEQUEÑO** se caracteriza por un espíritu inquebrantable de ayuda mutua. Servir no es una tarea obligada, sino la expresión física del amor que profesamos.
@@ -103,11 +103,11 @@ Recuerda que el que no vive para servir, no sirve para vivir. Busquemos esta sem
   },
   {
     id: "4",
-    codigo: "SANT-2026-04",
+    codigo: "CAS-2026-01",
     titulo: "El Estudio de las Escrituras y la Sabiduría Diaria",
     fecha: "2026-04-02",
-    serie_id: "estudios-tematicos",
-    autor: "Misionera Elena",
+    serie_id: "elena-2026",
+    autor: "Misionera Elena Castro",
     contenido: `# El Estudio de las Escrituras y la Sabiduría Diaria
 
 Sumergirse en los textos antiguos no es una actividad puramente intelectual. Es una búsqueda del mapa del alma que nos guía para habitar de manera armoniosa en este mundo.
@@ -124,11 +124,11 @@ Proponeos leer un capítulo con detenimiento cada mañana. Anotad vuestro pasaje
   },
   {
     id: "5",
-    codigo: "SANT-2026-05",
+    codigo: "GOM-2026-04",
     titulo: "La Esperanza en la Incertidumbre: Una Luz que No se Apaga",
     fecha: "2026-05-18",
-    serie_id: "reflexiones-fe",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2026",
+    autor: "Pastor Daniel Gómez",
     contenido: `# La Esperanza en la Incertidumbre: Una Luz que No se Apaga
 
 ¿Cómo mantener la **esperanza** cuando las circunstancias a nuestro alrededor parecen confusas y las nubes de la incertidumbre cubren el horizonte? 
@@ -147,11 +147,11 @@ Mantén tu mirada alta, porque tu redención está cerca. No estás solo en el c
   },
   {
     id: "6",
-    codigo: "SANT-2025-42",
+    codigo: "BEN-2024-01",
     titulo: "La Paciencia en la Siembra y la Cosecha Espiritual",
-    fecha: "2025-11-20",
-    serie_id: "estudios-tematicos",
-    autor: "Misionera Elena",
+    fecha: "2024-11-20",
+    serie_id: "benitez-2024",
+    autor: "Pastor Marcos Benítez",
     contenido: `# La Paciencia en la Siembra y la Cosecha Espiritual
 
 En la agricultura de **EL GRUPITO PEQUEÑO**, todos sabemos que no puedes plantar una semilla hoy y cosechar sus frutos mañana. Se requiere tiempo, riego, cuidado y, por encima de todo, una profunda **paciencia**.
@@ -168,11 +168,11 @@ No te canses de hacer el bien, porque a su debido tiempo cosecharemos si no desm
   },
   {
     id: "7",
-    codigo: "SANT-2025-45",
+    codigo: "GOM-2025-01",
     titulo: "El Diálogo Intergeneracional en la Familia Moderna",
     fecha: "2025-12-05",
-    serie_id: "familia-hogar",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2025",
+    autor: "Pastor Daniel Gómez",
     contenido: `# El Diálogo Intergeneracional en la Familia Moderna
 
 Uno de los mayores desafíos del siglo XXI es el abismo que se abre entre abuelos, padres e hijos. Los rápidos cambios tecnológicos amenazan con cortar la transmisión de la sabiduría ancestral.
@@ -189,11 +189,11 @@ No permitamos que el ruido del televisor silencie las benditas voces de la exper
   },
   {
     id: "8",
-    codigo: "SANT-2025-48",
+    codigo: "GOM-2025-02",
     titulo: "El Valor de la Unidad Comunitaria ante los Retos",
     fecha: "2025-12-25",
-    serie_id: "vida-comunitaria",
-    autor: "Pastor Santibáñez",
+    serie_id: "gomez-2025",
+    autor: "Pastor Daniel Gómez",
     contenido: `# El Valor de la Unidad Comunitaria ante los Retos
 
 En este frío mes de diciembre, recordamos que el calor no solo proviene de la leña, sino de nuestros corazones unidos. El verdadero sentido de la **comunidad** en **EL GRUPITO PEQUEÑO** se revela cuando el clima se endurece.

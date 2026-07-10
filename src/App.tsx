@@ -53,7 +53,20 @@ export default function App() {
     const cachedMessages = localStorage.getItem("santibanez_messages");
     if (cachedMessages) {
       try {
-        return JSON.parse(cachedMessages);
+        const parsed = JSON.parse(cachedMessages);
+        // Reset cache if it references the old thematic series IDs or Santibáñez
+        if (parsed.some((m: any) => 
+          m.serie_id === "reflexiones-fe" || 
+          m.serie_id === "estudios-tematicos" || 
+          m.serie_id === "vida-comunitaria" || 
+          m.serie_id === "familia-hogar" ||
+          m.serie_id.includes("santibanez") ||
+          (m.autor && m.autor.includes("Santibáñez"))
+        )) {
+          localStorage.setItem("santibanez_messages", JSON.stringify(initialMessages));
+          return initialMessages;
+        }
+        return parsed;
       } catch (e) {
         return initialMessages;
       }
@@ -64,7 +77,20 @@ export default function App() {
     const cachedSeries = localStorage.getItem("santibanez_series");
     if (cachedSeries) {
       try {
-        return JSON.parse(cachedSeries);
+        const parsed = JSON.parse(cachedSeries);
+        // Reset cache if it references the old thematic series IDs or Santibáñez
+        if (parsed.some((s: any) => 
+          s.id === "reflexiones-fe" || 
+          s.id === "estudios-tematicos" || 
+          s.id === "vida-comunitaria" || 
+          s.id === "familia-hogar" ||
+          s.id.includes("santibanez") ||
+          s.titulo.includes("Santibáñez")
+        )) {
+          localStorage.setItem("santibanez_series", JSON.stringify(initialSeries));
+          return initialSeries;
+        }
+        return parsed;
       } catch (e) {
         return initialSeries;
       }
@@ -304,7 +330,7 @@ export default function App() {
   const uniqueAuthors = useMemo(() => {
     const authors = new Set<string>();
     messages.forEach((m) => {
-      const author = m.autor || "Pastor Santibáñez";
+      const author = m.autor || "Pastor Daniel Gómez";
       authors.add(author.trim());
     });
     return Array.from(authors).sort();
@@ -326,7 +352,7 @@ export default function App() {
       const yr = m.fecha ? m.fecha.substring(0, 4) : "";
       const matchYear = searchYearFilter === "all" || yr === searchYearFilter;
       
-      const author = m.autor || "Pastor Santibáñez";
+      const author = m.autor || "Pastor Daniel Gómez";
       const matchAuthor = searchAuthorFilter === "all" || author.trim().toLowerCase() === searchAuthorFilter.trim().toLowerCase();
       
       const query = searchQuery.toLowerCase().trim();
@@ -662,12 +688,12 @@ export default function App() {
                     <h2 className={`font-serif text-3xl font-bold tracking-tight ${
                       isOled ? "text-white" : "text-emerald-950"
                     }`}>
-                      Series y Categorías
+                      Series por Pastor y Año
                     </h2>
                     <p className={`mt-2 sm:text-sm ${
                       isOled ? "text-zinc-400" : "text-zinc-650"
                     }`}>
-                      Filtre las enseñanzas de la comunidad seleccionando una línea temática.
+                      Filtre las enseñanzas de la comunidad seleccionando un Pastor y un Año.
                     </p>
                   </div>
 
@@ -783,7 +809,7 @@ export default function App() {
                             ? "border-[#27272A] bg-[#0A0A0C]/50 text-zinc-500" 
                             : "border-zinc-200 bg-zinc-50 text-zinc-500"
                         }`}>
-                          No hay sermones cargados bajo esta temática actualmente.
+                          No hay sermones cargados bajo este Pastor y Año actualmente.
                         </div>
                       )}
                     </div>
@@ -791,7 +817,7 @@ export default function App() {
                     <div className={`rounded-2xl p-10 text-center border ${
                       isOled ? "bg-[#0A0A0C] border-[#27272A] text-zinc-500" : "bg-zinc-50 border-zinc-100 text-zinc-500"
                     }`}>
-                      <p className="text-sm text-zinc-400">Selecciona una tarjeta superior para desplegar los sermones vinculados a esa serie cronológicamente.</p>
+                      <p className="text-sm text-zinc-400">Selecciona una tarjeta superior para desplegar los sermones vinculados a ese Pastor y Año.</p>
                     </div>
                   )}
                 </div>

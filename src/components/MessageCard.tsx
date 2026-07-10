@@ -109,7 +109,7 @@ export default function MessageCard({
         <p className="text-xs font-mono uppercase tracking-wide mb-2.5 text-zinc-500 flex items-center gap-1">
           <span className="font-bold">Expositor:</span>
           <span className={isOled ? "text-zinc-300" : "text-zinc-700"}>
-            {highlight(message.autor || "Pastor Santibáñez", searchTerm)}
+            {highlight(message.autor || "Pastor Daniel Gómez", searchTerm)}
           </span>
         </p>
 
