@@ -83,6 +83,66 @@ export default function MessageReader({
     }
   }, [innerSearchQuery, message.contenido]);
 
+  // Extract all matching parts of the text to show as snippets
+  const searchResults = React.useMemo(() => {
+    if (!innerSearchQuery.trim()) return [];
+    
+    const query = innerSearchQuery.toLowerCase().trim();
+    const content = message.contenido;
+    const lowerContent = content.toLowerCase();
+    
+    const results = [];
+    let pos = lowerContent.indexOf(query);
+    
+    while (pos !== -1) {
+      // Find the start and end of context
+      const start = Math.max(0, pos - 45);
+      const end = Math.min(content.length, pos + query.length + 45);
+      
+      let snippet = content.substring(start, end)
+        .replace(/#+/g, " ")
+        .replace(/\*/g, "")
+        .replace(/\n+/g, " ")
+        .trim();
+        
+      if (start > 0) snippet = "..." + snippet;
+      if (end < content.length) snippet = snippet + "...";
+      
+      results.push({
+        index: results.length,
+        snippet,
+        position: pos
+      });
+      
+      pos = lowerContent.indexOf(query, pos + 1);
+    }
+    
+    return results;
+  }, [innerSearchQuery, message.contenido]);
+
+  const highlightSnippetText = (text: string, query: string, isActive: boolean) => {
+    if (!query || !query.trim()) return text;
+    const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escapedQuery})`, "gi"));
+    return parts.map((part, idx) => {
+      const isMatch = part.toLowerCase() === query.toLowerCase();
+      return isMatch ? (
+        <mark
+          key={idx}
+          className={`px-0.5 rounded font-bold ${
+            isActive
+              ? "bg-orange-500 text-white dark:bg-amber-500 dark:text-black"
+              : "bg-amber-200 text-zinc-950 dark:bg-amber-400 dark:text-black"
+          }`}
+        >
+          {part}
+        </mark>
+      ) : (
+        part
+      );
+    });
+  };
+
   // Handle scrolling to matches
   const scrollToMatch = (index: number) => {
     const elements = document.querySelectorAll(".search-match-highlight");
@@ -527,88 +587,130 @@ export default function MessageReader({
         <div className={`transition-all duration-300 ${showStudyNotes ? "lg:col-span-8" : "lg:col-span-12"}`}>
           
           {/* Inner Message Search Bar */}
-          <div className={`mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 rounded-2xl border transition-all ${
+          <div className={`mb-4 flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
             isOled 
               ? "bg-[#111114] border-zinc-800 text-zinc-300" 
               : "bg-emerald-50/40 border-emerald-100 text-emerald-950 shadow-sm"
           }`}>
-            <div className="flex items-center gap-2.5 flex-grow w-full">
-              <span className={`p-2.5 rounded-xl ${isOled ? "bg-zinc-900 text-amber-400" : "bg-emerald-100 text-emerald-800"}`}>
-                <Search className="h-4 w-4" />
-              </span>
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Buscar palabras o frases dentro de este sermón..."
-                  value={innerSearchQuery}
-                  onChange={(e) => setInnerSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleNextMatch();
-                    }
-                  }}
-                  className={`w-full py-2 pl-3.5 pr-10 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-all ${
-                    isOled 
-                      ? "bg-[#0A0A0C] border-zinc-850 text-white placeholder-zinc-500 focus:ring-amber-500 focus:border-amber-500" 
-                      : "bg-white border-zinc-250 text-zinc-850 placeholder-zinc-400 focus:ring-emerald-600 focus:border-emerald-600"
-                  }`}
-                />
-                {innerSearchQuery && (
-                  <button
-                    onClick={() => setInnerSearchQuery("")}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {innerSearchQuery.trim() && (
-              <div className="flex items-center gap-3 justify-between md:justify-end w-full md:w-auto shrink-0 font-mono text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className={`px-3 py-1 rounded-full font-bold ${
-                    matchCount > 0 
-                      ? isOled 
-                        ? "bg-amber-950/40 text-amber-300 border border-amber-900/45" 
-                        : "bg-emerald-100 text-emerald-800"
-                      : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
-                  }`}>
-                    {matchCount > 0 
-                      ? `${currentMatchIndex + 1} de ${matchCount} coincidencias` 
-                      : "Sin resultados"}
-                  </span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 flex-grow w-full">
+                <span className={`p-2.5 rounded-xl ${isOled ? "bg-zinc-900 text-amber-400" : "bg-emerald-100 text-emerald-800"}`}>
+                  <Search className="h-4 w-4" />
+                </span>
+                <div className="relative w-full">
+                  <input
+                    type="text"
+                    placeholder="Buscar palabras o frases dentro de este sermón..."
+                    value={innerSearchQuery}
+                    onChange={(e) => setInnerSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleNextMatch();
+                      }
+                    }}
+                    className={`w-full py-2 pl-3.5 pr-10 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-all ${
+                      isOled 
+                        ? "bg-[#0A0A0C] border-zinc-850 text-white placeholder-zinc-500 focus:ring-amber-500 focus:border-amber-500" 
+                        : "bg-white border-zinc-250 text-zinc-850 placeholder-zinc-400 focus:ring-emerald-600 focus:border-emerald-600"
+                    }`}
+                  />
+                  {innerSearchQuery && (
+                    <button
+                      onClick={() => setInnerSearchQuery("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-
-                {matchCount > 0 && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handlePrevMatch}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
-                        isOled 
-                          ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
-                          : "bg-white border-zinc-200 text-zinc-750 hover:bg-zinc-50 hover:text-zinc-950 shadow-sm"
-                      }`}
-                      title="Coincidencia anterior"
-                    >
-                      <ChevronUp className="h-3.5 w-3.5 shrink-0" />
-                      <span>Anterior</span>
-                    </button>
-                    <button
-                      onClick={handleNextMatch}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
-                        isOled 
-                          ? "bg-zinc-900 border-zinc-800 text-[#FDE047] hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
-                          : "bg-emerald-50 border-emerald-250 text-emerald-700 hover:bg-emerald-100/80 hover:text-emerald-800 shadow-xs"
-                      }`}
-                      title="Siguiente coincidencia (Enter)"
-                    >
-                      <span>Siguiente</span>
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                    </button>
+              </div>
+              
+              {innerSearchQuery.trim() && (
+                <div className="flex items-center gap-3 justify-between md:justify-end w-full md:w-auto shrink-0 font-mono text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`px-3 py-1 rounded-full font-bold ${
+                      matchCount > 0 
+                        ? isOled 
+                          ? "bg-amber-950/40 text-amber-300 border border-amber-900/45" 
+                          : "bg-emerald-100 text-emerald-800"
+                        : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                    }`}>
+                      {matchCount > 0 
+                        ? `${currentMatchIndex + 1} de ${matchCount} coincidencias` 
+                        : "Sin resultados"}
+                    </span>
                   </div>
-                )}
+
+                  {matchCount > 0 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handlePrevMatch}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+                          isOled 
+                            ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
+                            : "bg-white border-zinc-200 text-zinc-750 hover:bg-zinc-50 hover:text-zinc-950 shadow-sm"
+                        }`}
+                        title="Coincidencia anterior"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        onClick={handleNextMatch}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+                          isOled 
+                            ? "bg-zinc-900 border-zinc-800 text-[#FDE047] hover:text-white hover:border-zinc-700 hover:bg-zinc-850" 
+                            : "bg-emerald-50 border-emerald-250 text-emerald-700 hover:bg-emerald-100/80 hover:text-emerald-800 shadow-xs"
+                        }`}
+                        title="Siguiente coincidencia (Enter)"
+                      >
+                        <span>Siguiente</span>
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Snippets list panel inside the search box */}
+            {innerSearchQuery.trim() && matchCount > 0 && searchResults.length > 0 && (
+              <div className={`mt-1 border-t pt-3 ${isOled ? "border-zinc-800/50" : "border-emerald-100/60"}`}>
+                <p className={`text-[11px] font-mono uppercase tracking-wider mb-2 font-bold ${isOled ? "text-zinc-400" : "text-emerald-800"}`}>
+                  Coincidencias encontradas (Haga clic para saltar al párrafo):
+                </p>
+                <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
+                  {searchResults.map((res) => {
+                    const isCurrent = res.index === currentMatchIndex;
+                    return (
+                      <button
+                        key={res.index}
+                        onClick={() => scrollToMatch(res.index)}
+                        className={`text-left w-full px-3 py-2 rounded-xl text-xs font-sans transition-all flex items-center justify-between gap-3 cursor-pointer border ${
+                          isCurrent
+                            ? isOled
+                              ? "bg-[#FDE047]/10 border-[#FDE047] text-white font-medium"
+                              : "bg-emerald-50 border-emerald-300 text-emerald-950 font-medium shadow-xs"
+                            : isOled
+                              ? "bg-zinc-900/40 border-zinc-850 text-zinc-400 hover:bg-zinc-850 hover:text-zinc-200"
+                              : "bg-white border-zinc-200 text-zinc-650 hover:bg-zinc-50 hover:text-zinc-850"
+                        }`}
+                      >
+                        <span className="truncate">
+                          {highlightSnippetText(res.snippet, innerSearchQuery, isCurrent)}
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                          isCurrent
+                            ? isOled ? "bg-[#FDE047] text-black" : "bg-emerald-600 text-white"
+                            : isOled ? "bg-zinc-850 text-zinc-500" : "bg-zinc-100 text-zinc-500"
+                        }`}>
+                          #{res.index + 1}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

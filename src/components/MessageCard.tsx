@@ -48,24 +48,54 @@ export default function MessageCard({
     });
   };
 
-  // Extract a nice clean excerpt from the markdown content
-  const getExcerpt = (md: string) => {
-    // Remove headers and code markers
+  // Extract a clean excerpt from the markdown content, centered around the search term if available
+  const getExcerpt = (md: string, search: string) => {
     let clean = md
-      .replace(/#+\s+/g, "") // remove markdown titles
-      .replace(/>\s+/g, "")  // remove blockquotes
-      .replace(/\*\*/g, "")  // remove strong
-      .replace(/\n+/g, " ")  // remove raw linebreaks
+      .replace(/#+\s+/g, " ") // replace headers with space
+      .replace(/>\s+/g, " ")  // replace blockquotes with space
+      .replace(/\*\*/g, "")  // remove bold
+      .replace(/\*/g, "")    // remove bullet points / italics
+      .replace(/_+/g, "")    // remove underscores
+      .replace(/`+/g, "")    // remove backticks
+      .replace(/\n+/g, " ")  // replace newlines with space
       .trim();
     
-    // Shorten
-    if (clean.length > 180) {
-      return clean.substring(0, 175) + "...";
+    if (!search || !search.trim()) {
+      if (clean.length > 180) {
+        return clean.substring(0, 175) + "...";
+      }
+      return clean;
     }
-    return clean;
+
+    const lowerClean = clean.toLowerCase();
+    const lowerSearch = search.toLowerCase();
+    const index = lowerClean.indexOf(lowerSearch);
+
+    if (index === -1) {
+      // Fallback if search term is not in the body
+      if (clean.length > 180) {
+        return clean.substring(0, 175) + "...";
+      }
+      return clean;
+    }
+
+    // Capture context around the search term
+    const contextSize = 75;
+    const start = Math.max(0, index - contextSize);
+    const end = Math.min(clean.length, index + search.length + contextSize);
+
+    let snippet = clean.substring(start, end);
+    
+    if (start > 0) {
+      snippet = "..." + snippet;
+    }
+    if (end < clean.length) {
+      snippet = snippet + "...";
+    }
+    return snippet;
   };
 
-  const excerpt = getExcerpt(message.contenido);
+  const excerpt = getExcerpt(message.contenido, searchTerm);
 
   return (
     <div 
