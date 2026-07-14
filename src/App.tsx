@@ -415,7 +415,7 @@ export default function App() {
             }`}>
               <img 
                 src={pozoLogo} 
-                alt="Logo El Grupito Pequeño" 
+                alt="Logo Pozo de Belén" 
                 className="h-24 w-24 rounded-full object-contain"
                 referrerPolicy="no-referrer"
               />
@@ -517,7 +517,7 @@ export default function App() {
                         }`}>
                           <img 
                             src={pozoLogo} 
-                            alt="Logo El Grupito Pequeño" 
+                            alt="Logo Pozo de Belén" 
                             className="h-28 w-28 rounded-full object-contain"
                             referrerPolicy="no-referrer"
                           />
@@ -932,7 +932,7 @@ export default function App() {
                     <p className={`mt-2 sm:text-sm ${
                       isOled ? "text-zinc-400" : "text-zinc-600"
                     }`}>
-                      Búsquedas de texto completo de alta velocidad con resaltador interactivo para la comunidad de EL GRUPITO PEQUEÑO.
+                      Búsquedas de texto completo de alta velocidad con resaltador interactivo para la comunidad de Pozo de Belén.
                     </p>
                   </div>
 

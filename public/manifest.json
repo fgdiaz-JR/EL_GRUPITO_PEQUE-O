@@ -1,7 +1,7 @@
 {
-  "name": "El Grupito Pequeño",
-  "short_name": "El Grupito",
-  "description": "Aplicación oficial offline-first para la lectura, búsqueda avanzada y catalogación de sermones de la comunidad de El Grupito Pequeño.",
+  "name": "Pozo de Belén",
+  "short_name": "Pozo de Belén",
+  "description": "Aplicación oficial offline-first para la lectura, búsqueda avanzada y catalogación de sermones de la comunidad de Pozo de Belén.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#121212",

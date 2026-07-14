@@ -49,7 +49,7 @@ En una sociedad acelerada que valora la acción inmediata, la quietud se percibe
 > "El hombre que dobla sus rodillas ante el Creador puede mantenerse en pie ante cualquier tempestad."
 
 ## 2. La Oración comunitaria
-Cuando la comunidad de **EL GRUPITO PEQUEÑO** se reúne con un mismo sentir, se activa un lazo invisible que sostiene al caído y anima al cansado. Esta comunión es nuestro mayor tesoro.
+Cuando la comunidad de **Pozo de Belén** se reúne con un mismo sentir, se activa un lazo invisible que sostiene al caído y anima al cansado. Esta comunión es nuestro mayor tesoro.
 
 ### Aspectos clave de la oración compartida:
 * **Intercesión mutua:** Llevar las cargas de los otros en fe.
@@ -83,13 +83,13 @@ Transmitir fe y civismo no se hace con discursos largos, sino con el ejemplo dia
   {
     id: "3",
     codigo: "GOM-2026-03",
-    titulo: "Nuestra Identidad en el Servicio Mutuo de EL GRUPITO PEQUEÑO",
+    titulo: "Nuestra Identidad en el Servicio Mutuo de Pozo de Belén",
     fecha: "2026-03-14",
     serie_id: "extractos-mensajes",
     autor: "Pastor Daniel Gómez",
     contenido: `# Nuestra Identidad en el Servicio Mutuo
 
-Nuestra comunidad en **EL GRUPITO PEQUEÑO** se caracteriza por un espíritu inquebrantable de ayuda mutua. Servir no es una tarea obligada, sino la expresión física del amor que profesamos.
+Nuestra comunidad en **Pozo de Belén** se caracteriza por un espíritu inquebrantable de ayuda mutua. Servir no es una tarea obligada, sino la expresión física del amor que profesamos.
 
 ## El Altruismo es Conectarse
 Cuando ayudamos al vecino, cuando tendemos una mano en la limpieza del pueblo, o cuando cocinamos para alguien enfermo, estamos tejiendo el tejido de nuestra **identidad**. No somos individuos aislados; formamos un cuerpo vigoroso.
@@ -139,7 +139,7 @@ El optimismo cree que todo saldrá mágicamente bien. La esperanza, sin embargo,
 > "Aun cuando las higueras no florezcan, la fe nos desafía a cantar y a trabajar."
 
 ## Prácticas para custodiar la fe en la prueba:
-1. **Recordar las Victorias Pasadas:** Hacer memoria de cómo superamos obstáculos en años anteriores en **EL GRUPITO PEQUEÑO**.
+1. **Recordar las Victorias Pasadas:** Hacer memoria de cómo superamos obstáculos en años anteriores en **Pozo de Belén**.
 2. **Evitar los Mensajes Alarmistas:** Moderar el consumo de noticias negativas.
 3. **Compartir Palabras de Aliento:** Convertirse en el mensajero de esperanza que otros necesitan escuchar hoy.
 
@@ -154,7 +154,7 @@ Mantén tu mirada alta, porque tu redención está cerca. No estás solo en el c
     autor: "Pastor Marcos Benítez",
     contenido: `# La Paciencia en la Siembra y la Cosecha Espiritual
 
-En la agricultura de **EL GRUPITO PEQUEÑO**, todos sabemos que no puedes plantar una semilla hoy y cosechar sus frutos mañana. Se requiere tiempo, riego, cuidado y, por encima de todo, una profunda **paciencia**.
+En la agricultura de **Pozo de Belén**, todos sabemos que no puedes plantar una semilla hoy y cosechar sus frutos mañana. Se requiere tiempo, riego, cuidado y, por encima de todo, una profunda **paciencia**.
 
 ## El Misterio del Crecimiento Silencioso
 Ocurre lo mismo en nuestro espíritu y en la educación de nuestros hijos. Muchas veces oramos por cambios o sembramos buenas acciones y nos frustramos al no ver resultados inmediatos. Pero bajo la tierra, en lo secreto, la vida está abriéndose paso.
@@ -196,7 +196,7 @@ No permitamos que el ruido del televisor silencie las benditas voces de la exper
     autor: "Pastor Daniel Gómez",
     contenido: `# El Valor de la Unidad Comunitaria ante los Retos
 
-En este frío mes de diciembre, recordamos que el calor no solo proviene de la leña, sino de nuestros corazones unidos. El verdadero sentido de la **comunidad** en **EL GRUPITO PEQUEÑO** se revela cuando el clima se endurece.
+En este frío mes de diciembre, recordamos que el calor no solo proviene de la leña, sino de nuestros corazones unidos. El verdadero sentido de la **comunidad** en **Pozo de Belén** se revela cuando el clima se endurece.
 
 ## Ninguno es una Isla
 Las mayores dificultades de nuestro pueblo se han superado siempre remando todos en la misma dirección. La división carcome los cimientos de la paz; la unión los consolida.

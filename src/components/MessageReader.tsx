@@ -830,7 +830,7 @@ export default function MessageReader({
             <div className={`mt-12 pt-6 border-t border-dashed text-center text-xs font-mono text-zinc-500 ${
               isOled ? "border-[#27272A]" : "border-zinc-100"
             }`}>
-              Mensaje extraído del Archivo Digital de EL GRUPITO PEQUEÑO. © 2026 Todos los derechos reservados. El material cargado se almacena de manera virtual localmente.
+              Mensaje extraído del Archivo Digital de Pozo de Belén. © 2026 Todos los derechos reservados. El material cargado se almacena de manera virtual localmente.
             </div>
           </article>
         </div>

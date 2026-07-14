@@ -39,7 +39,7 @@ export default function Header({
           <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden shadow-lg border border-zinc-800 transition-transform hover:scale-105 bg-black/40">
             <img 
               src={pozoLogo} 
-              alt="Logo El Grupito Pequeño" 
+              alt="Logo Pozo de Belén" 
               className="h-full w-full object-contain"
               referrerPolicy="no-referrer"
             />
@@ -48,7 +48,7 @@ export default function Header({
             <h1 className={`font-serif text-sm font-bold tracking-tight leading-none uppercase ${
               isOled ? "text-white" : "text-[#1C2D2A]"
             }`}>
-              EL GRUPITO PEQUEÑO
+              POZO DE BELÉN
             </h1>
             <p className="text-[9px] font-mono tracking-widest text-[#708E86] uppercase mt-0.5 font-bold">
               Archivo de Mensajes
