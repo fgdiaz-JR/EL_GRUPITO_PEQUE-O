@@ -36,14 +36,14 @@ export default function App() {
   
   // Theme state: "oled" (high contrast pure black) vs "day" (Forest sage teal)
   const [theme, setTheme] = useState<"oled" | "day">(() => {
-    const cached = localStorage.getItem("grupito_theme");
+    const cached = localStorage.getItem("pdb_theme") || localStorage.getItem("grupito_theme");
     return (cached === "day" || cached === "oled") ? cached : "oled";
   });
 
   const handleToggleTheme = () => {
     setTheme((prev) => {
       const next = prev === "oled" ? "day" : "oled";
-      localStorage.setItem("grupito_theme", next);
+      localStorage.setItem("pdb_theme", next);
       return next;
     });
   };
@@ -148,16 +148,6 @@ export default function App() {
         setBookmarks([]);
       }
     }
-
-    // Auto-sync silently on initial mount
-    const loadAndSyncOnMount = async () => {
-      try {
-        await syncDataFromDatabase(false); // Silently sync without popping errors on initial load
-      } catch (e) {
-        console.warn("Silent auto-sync failed:", e);
-      }
-    };
-    loadAndSyncOnMount();
   }, []);
 
   // Universal database synchronizer (supports both 'sermones' and 'mensajes' collections, and 'series')

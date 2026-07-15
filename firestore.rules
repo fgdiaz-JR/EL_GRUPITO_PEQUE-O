@@ -2,8 +2,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // 1. Global Safety Net - Default Deny Catch-All
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // 2. Reusable, Hardened Security Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 3. Entity-Level Validation Helper for Message / Sermon
+    function isValidMessage(data) {
+      return data.keys().hasAll(['id', 'codigo', 'titulo', 'fecha', 'serie_id', 'contenido'])
+        && data.keys().size() <= 7 // id, codigo, titulo, fecha, serie_id, contenido, and optional autor
+        && data.id is string && data.id.size() <= 128
+        && data.codigo is string && data.codigo.size() <= 64
+        && data.titulo is string && data.titulo.size() <= 200
+        && data.fecha is string && data.fecha.size() <= 32
+        && data.serie_id is string && data.serie_id.size() <= 64
+        && data.contenido is string && data.contenido.size() <= 100000
+        && (!data.keys().hasAny(['autor']) || (data.autor is string && data.autor.size() <= 128));
+    }
+
+    // 4. Entity-Level Validation Helper for Series
+    function isValidSeries(data) {
+      return data.keys().hasAll(['id', 'titulo', 'descripcion', 'color', 'icon'])
+        && data.keys().size() == 5
+        && data.id is string && data.id.size() <= 64
+        && data.titulo is string && data.titulo.size() <= 128
+        && data.descripcion is string && data.descripcion.size() <= 1000
+        && data.color is string && data.color.size() <= 64
+        && data.icon is string && data.icon.size() <= 64;
+    }
+
+    // 5. Match rules for Collection "/mensajes"
+    match /mensajes/{mensajeId} {
+      allow read: if true; // Publicly readable for offline archive download
+      allow create, update: if isValidId(mensajeId) && isValidMessage(incoming());
+      allow delete: if false; // Protect historic archives from delete injection
+    }
+
+    // 6. Match rules for Collection "/sermones"
+    match /sermones/{sermonId} {
+      allow read: if true; // Publicly readable for offline archive download
+      allow create, update: if isValidId(sermonId) && isValidMessage(incoming());
+      allow delete: if false; // Protect historic archives from delete injection
+    }
+
+    // 7. Match rules for Collection "/series"
+    match /series/{seriesId} {
+      allow read: if true; // Publicly readable for category navigation
+      allow create, update: if isValidId(seriesId) && isValidSeries(incoming());
+      allow delete: if false; // Protect reference data from delete injection
     }
   }
 }
